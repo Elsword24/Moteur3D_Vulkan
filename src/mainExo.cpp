@@ -1,3 +1,4 @@
+#ifdef _WIN32
 #define NOMINMAX
 #define VK_USE_PLATFORM_WIN32_KHR
 #define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
@@ -8,6 +9,24 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
+
+#ifndef NDEBUG
+# pragma comment(lib, "glfw3-s-d.lib")
+#else /* NDEBUG */
+# pragma comment(lib, "glfw3-s.lib")
+#endif /* NDEBUG */
+
+#elif __linux__
+#if defined(__INTELLISENSE__) || !defined(USE_CPP20_MODULES)
+#	include <vulkan/vulkan_raii.hpp>
+#else
+import vulkan_hpp;
+#endif
+
+#define GLFW_INCLUDE_VULKAN        // REQUIRED only for GLFW CreateWindowSurface.
+#include <GLFW/glfw3.h>
+#endif
+
 
 #include <algorithm>
 #include <assert.h>
@@ -20,11 +39,7 @@
 #include <stdexcept>
 #include <vector>
 
-#ifndef NDEBUG
-# pragma comment(lib, "glfw3-s-d.lib")
-#else /* NDEBUG */
-# pragma comment(lib, "glfw3-s.lib")
-#endif /* NDEBUG */
+
 
 constexpr uint32_t WIDTH = 800;
 constexpr uint32_t HEIGHT = 600;
@@ -115,7 +130,7 @@ private:
 	void createInstance()
 
 	{
-		/*ApplicationInfo sert à envoyer les paramètres de l'application,
+		/*ApplicationInfo sert ï¿½ envoyer les paramï¿½tres de l'application,
 		 *pour que le driver Vulkan puisse debug
 		 *ou fournir des statistiques sur l'application*/
 		constexpr vk::ApplicationInfo appInfo
@@ -164,7 +179,7 @@ private:
 		}
 
 
-		//Info pour créer l'instance
+		//Info pour crï¿½er l'instance
 		vk::InstanceCreateInfo createInfo
 		{
 			.pApplicationInfo = &appInfo,
@@ -424,7 +439,7 @@ private:
 	}
 	void createGraphicsPipeline()
 	{
-		vk::raii::ShaderModule shaderModule = createShaderModule(readFile("shaders/slang.spv"));
+		vk::raii::ShaderModule shaderModule = createShaderModule(readFile("../shaders/slang.spv"));
 
 		vk::PipelineShaderStageCreateInfo vertShaderStageInfo
 		{
