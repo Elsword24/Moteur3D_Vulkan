@@ -18,8 +18,8 @@ import vulkan_hpp;
 #define GLFW_INCLUDE_VULKAN        // REQUIRED only for GLFW CreateWindowSurface.
 #include <GLFW/glfw3.h>
 
-constexpr uint32_t WIDTH  = 800;
-constexpr uint32_t HEIGHT = 600;
+//constexpr uint32_t WIDTH  = 800;
+//constexpr uint32_t HEIGHT = 600;
 
 const std::vector<char const *> validationLayers = {
     "VK_LAYER_KHRONOS_validation"};
@@ -30,19 +30,29 @@ constexpr bool enableValidationLayers = false;
 constexpr bool enableValidationLayers = true;
 #endif
 
+#include "camera.h"
+
 class HelloTriangleApplication
 {
   public:
+
+	  HelloTriangleApplication()
+	  {
+		  window = new Window();
+		  camera = std::make_unique<Camera>(window);
+	  }
+
 	void run()
 	{
 		initWindow();
 		initVulkan();
+		camera->setupInputCallbacks();
 		mainLoop();
 		cleanup();
 	}
 
   private:
-	GLFWwindow                      *window = nullptr;
+	Window                           *window = nullptr;
 	vk::raii::Context                context;
 	vk::raii::Instance               instance       = nullptr;
 	vk::raii::DebugUtilsMessengerEXT debugMessenger = nullptr;
@@ -66,18 +76,14 @@ class HelloTriangleApplication
 	vk::raii::Semaphore presentCompleteSemaphore = nullptr;
 	vk::raii::Semaphore renderFinishedSemaphore  = nullptr;
 	vk::raii::Fence     drawFence                = nullptr;
+	std::unique_ptr<Camera> camera;
 
 	std::vector<const char *> requiredDeviceExtension = {
 	    vk::KHRSwapchainExtensionName};
 
 	void initWindow()
 	{
-		glfwInit();
-
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
-		window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+		window->initWindow();
 	}
 
 	void initVulkan()
@@ -97,9 +103,10 @@ class HelloTriangleApplication
 
 	void mainLoop()
 	{
-		while (!glfwWindowShouldClose(window))
+		while (!window->WindowClosed())
 		{
-			glfwPollEvents();
+			window->PollEvent();
+			camera->processInput(*window, *camera, 0.16f);
 			drawFrame();
 		}
 		device.waitIdle();        // wait for device to finish operations before destroying resources
@@ -107,9 +114,7 @@ class HelloTriangleApplication
 
 	void cleanup()
 	{
-		glfwDestroyWindow(window);
-
-		glfwTerminate();
+		window->cleanup();
 	}
 
 	void createInstance()
@@ -178,7 +183,7 @@ class HelloTriangleApplication
 	void createSurface()
 	{
 		VkSurfaceKHR _surface;
-		if (glfwCreateWindowSurface(*instance, window, nullptr, &_surface) != 0)
+		if (glfwCreateWindowSurface(*instance, window->getGLFWWindow(), nullptr, &_surface) != 0)
 		{
 			throw std::runtime_error("failed to create window surface!");
 		}
@@ -527,7 +532,7 @@ class HelloTriangleApplication
 			return capabilities.currentExtent;
 		}
 		int width, height;
-		glfwGetFramebufferSize(window, &width, &height);
+		window->GetFramebufferSize(width, height);
 
 		return {
 		    std::clamp<uint32_t>(width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
