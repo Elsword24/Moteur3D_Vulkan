@@ -1,3 +1,10 @@
-#Ignored Build Configuration Directory
+#Ignored Build Configuration Folder
 /Build
+
+#Ignored Folder for CLion
+/.idea
+..gitignore.kate-swp
+/Debug
+/Release
+
 
