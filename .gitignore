@@ -4,3 +4,5 @@
 #Ignored Folder for CLion
 /.idea
 ..gitignore.kate-swp
+/Debug
+/Release
