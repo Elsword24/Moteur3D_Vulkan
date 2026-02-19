@@ -44,22 +44,28 @@ constexpr bool enableValidationLayers = false;
 constexpr bool enableValidationLayers = true;
 #endif
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 struct Vertex
 {
-	glm::vec2 pos;
-	glm::vec3 color;
+	glm::vec3 pos;
+	glm::vec3 normal;
+	glm::vec2 uv;
 
 	static vk::VertexInputBindingDescription getBindingDescription()
 	{
 		return { 0, sizeof(Vertex), vk::VertexInputRate::eVertex };
 	}
 
-	static std::array<vk::VertexInputAttributeDescription, 2> getAttributeDescriptions()
+	static std::array<vk::VertexInputAttributeDescription, 3> getAttributeDescriptions()
 	{
 		return {
-			vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, pos)),
-			vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, color)) };
+			vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, pos)),
+			vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, normal)),
+			vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, uv)) };
 	}
+
 };
 
 struct UniformBufferObject
@@ -69,14 +75,79 @@ struct UniformBufferObject
 	glm::mat4 proj;
 };
 
-const std::vector<Vertex> vertices = {
-	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}} };
+std::vector<Vertex> vertices;
+std::vector<uint32_t> indices;
 
-const std::vector<uint16_t> indices = {
-	0, 1, 2, 2, 3, 0 };
+void LoadModel(const std::string& filePath)
+{
+	vertices.clear();
+	indices.clear();
+
+	auto rapidObj = rapidobj::ParseFile(filePath);
+
+	if (!std::filesystem::exists(filePath))
+	{
+		throw std::runtime_error("model file not found! " + std::filesystem::absolute(filePath).string());
+	}
+
+	if (rapidObj.error)
+	{
+		throw std::runtime_error("Failed to load model! " + rapidObj.error.line);
+	}
+
+	rapidobj::Triangulate(rapidObj);
+
+	for (const auto& shape : rapidObj.shapes)
+	{
+		for (const auto& index : shape.mesh.indices)
+		{
+			Vertex vertex{};
+			vertex.pos =
+			{
+				rapidObj.attributes.positions[3 * index.position_index + 0],
+				rapidObj.attributes.positions[3 * index.position_index + 1],
+				rapidObj.attributes.positions[3 * index.position_index + 2]
+
+			};
+
+
+			if (index.normal_index != -1)
+			{
+				vertex.normal =
+				{
+					rapidObj.attributes.normals[3 * index.normal_index + 0],
+					rapidObj.attributes.normals[3 * index.normal_index + 1],
+					rapidObj.attributes.normals[3 * index.normal_index + 2],
+				};
+			}
+			else
+			{
+				vertex.normal = { 0.0f, 1.0f, 0.0f };
+			};
+
+			if (index.texcoord_index != -1)
+			{
+				vertex.uv =
+				{
+					rapidObj.attributes.texcoords[2 * index.texcoord_index + 0],
+					1.0f - rapidObj.attributes.texcoords[2 * index.texcoord_index + 1]
+
+				};
+			}
+			else
+			{
+				vertex.uv = { 0.0f, 0.0f };
+			};
+
+			indices.push_back(static_cast<uint32_t>(indices.size()));
+			vertices.push_back(vertex);
+		}
+	}
+
+	std::cout << "Loaded model with " << vertices.size() << " vertices." << std::endl;
+	std::cout << "Loaded model with " << indices.size() << " indices." << std::endl;
+}
+
 
 //class ThirdPersonCamera : public Camera
 //{
@@ -165,6 +236,8 @@ public:
 	void run()
 	{
 		initWindow();
+		LoadModel("../shaders/box.obj");
+
 		initVulkan();
 		camera->setupInputCallbacks();
 		mainLoop();
@@ -239,6 +312,7 @@ private:
 		createImageViews();
 		createDescriptorSetLayout();
 		createGraphicsPipeline();
+		createTextureImage();
 		createCommandPool();
 		createVertexBuffer();
 		createIndexBuffer();
@@ -533,6 +607,11 @@ private:
 		graphicsPipeline = vk::raii::Pipeline(device, nullptr, pipelineCreateInfoChain.get<vk::GraphicsPipelineCreateInfo>());
 	}
 
+	void createTextureImage()
+	{
+
+	}
+
 	void createCommandPool()
 	{
 		vk::CommandPoolCreateInfo poolInfo{ .flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
@@ -687,7 +766,7 @@ private:
 		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapChainExtent.width), static_cast<float>(swapChainExtent.height), 0.0f, 1.0f));
 		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapChainExtent));
 		commandBuffer.bindVertexBuffers(0, *vertexBuffer, { 0 });
-		commandBuffer.bindIndexBuffer(*indexBuffer, 0, vk::IndexType::eUint16);
+		commandBuffer.bindIndexBuffer(*indexBuffer, 0, vk::IndexType::eUint32);
 		commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, *descriptorSets[frameIndex], nullptr);
 		commandBuffer.drawIndexed(indices.size(), 1, 0, 0, 0);
 		commandBuffer.endRendering();
@@ -760,7 +839,7 @@ private:
 		float time = std::chrono::duration<float>(currentTime - startTime).count();
 
 		UniformBufferObject ubo{};
-		ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		ubo.view = camera->getViewMatrix();
 		ubo.proj = camera->getProjectionMatrix(
@@ -880,7 +959,7 @@ private:
 			return capabilities.currentExtent;
 		}
 		int width, height;
-		
+
 		window->GetFramebufferSize(width, height);
 
 		return {
@@ -917,7 +996,7 @@ private:
 		std::ifstream file(filename, std::ios::ate | std::ios::binary);
 		if (!file.is_open())
 		{
-			throw std::runtime_error("failed to open file!");
+			throw std::runtime_error("failed to open file! actualPath : " + std::filesystem::current_path().string() + " try directory : " + filename);
 		}
 		std::vector<char> buffer(file.tellg());
 		file.seekg(0, std::ios::beg);

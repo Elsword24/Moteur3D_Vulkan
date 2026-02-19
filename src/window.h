@@ -1,14 +1,13 @@
 #pragma once
 #include "input.h"
 
-
 constexpr uint32_t WIDTH = 800;
 constexpr uint32_t HEIGHT = 600;
 
 class Window
 {
 public:
-	Window() 
+	Window()
 	{
 
 	}
@@ -60,7 +59,7 @@ public:
 	{
 		return m_window;
 	}
-	
+
 
 	void setUserPointer(void* ptr)
 	{

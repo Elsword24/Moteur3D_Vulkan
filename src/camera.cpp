@@ -39,11 +39,11 @@ void Camera::processInput(Window& window, Camera& camera, float deltaTime)
 	{
 		camera.processKeyboard(CameraMovement::BACKWARD, deltaTime);
 	}
-	if (window.GetKey(input::keyPressed(input::Key::KEY_Q)) == input::inputState::PRESSED)
+	if (window.GetKey(input::keyPressed(input::Key::KEY_D)) == input::inputState::PRESSED)
 	{
 		camera.processKeyboard(CameraMovement::LEFT, deltaTime);
 	}
-	if (window.GetKey(input::keyPressed(input::Key::KEY_D)) == input::inputState::PRESSED)
+	if (window.GetKey(input::keyPressed(input::Key::KEY_Q)) == input::inputState::PRESSED)
 	{
 		camera.processKeyboard(CameraMovement::RIGHT, deltaTime);
 	}
@@ -69,7 +69,7 @@ void Camera::mouseCallback(GLFWwindow* window, double xpos, double ypos)
 	static bool firstMouse = true;
 	static float lastX = 400.0f, lastY = 300.0f;
 
-	if (firstMouse)	
+	if (firstMouse)
 	{
 		lastX = xpos;
 		lastY = ypos;

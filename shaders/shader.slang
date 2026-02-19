@@ -1,7 +1,8 @@
 
 struct VSInput {
-    float2 inPosition;
-    float3 inColor;
+    float3 inPosition;
+    float3 inNormal;
+    float2 inUV;
 };
 
 struct UniformBuffer {
@@ -14,14 +15,17 @@ ConstantBuffer<UniformBuffer> ubo;
 struct VSOutput
 {
     float4 pos : SV_Position;
+    float3 normal;
     float3 color;
 };
 
 [shader("vertex")]
 VSOutput vertMain(VSInput input) {
     VSOutput output;
-    output.pos = mul(ubo.proj, mul(ubo.view, mul(ubo.model, float4(input.inPosition, 0.0, 1.0))));
-    output.color = input.inColor;
+    output.pos = mul(ubo.proj, mul(ubo.view, mul(ubo.model, float4(input.inPosition, 1.0))));
+    output.normal = mul((float3x3)ubo.model, input.inNormal);
+    output.normal = normalize(output.normal);
+    output.color = float3 (1.0f, 1.0f, 1.0f);
     return output;
 }
 
