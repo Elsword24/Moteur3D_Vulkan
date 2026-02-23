@@ -4,7 +4,7 @@
 class UIEvent : public Event
 {
 private:
-	UiElement* target;
+	UiElement* target; // UIELEMENT can be buttons, text or other it hasn't been created yet
 	bool bubbles;
 	bool cancelBubble = false;
 
