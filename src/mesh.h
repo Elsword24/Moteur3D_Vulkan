@@ -87,6 +87,12 @@ struct Mesh
 	vk::raii::DeviceMemory indexBufferMemory = nullptr;
 };
 
+class IGameObject
+{
+public:
+
+private:
+};
 
 class GameObject : public IGameObject
 {
