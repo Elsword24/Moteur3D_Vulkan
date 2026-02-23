@@ -24,7 +24,7 @@ public:
 		return cancelBubble;
 	}
 
-	DEFINE_EVENT_TYPE(UIEvent, static_cast<int>(EventCategory::UI))
+	DEFINE_EVENT_TYPE(UIEvent, EventCategory::UI)
 };
 
 class UISystem
