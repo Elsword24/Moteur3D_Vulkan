@@ -236,7 +236,7 @@ public:
 	void run()
 	{
 		initWindow();
-		LoadModel("../shaders/box.obj");
+		LoadModel("../shaders/monkey.obj");
 
 		initVulkan();
 		camera->setupInputCallbacks();
