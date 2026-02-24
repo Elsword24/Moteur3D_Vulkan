@@ -179,5 +179,31 @@ target_include_directories(${PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/include/
 )
 
+if(CMAKE_GENERATOR MATCHES "Visual Studio")
+        file(GLOB_RECURSE HEADERS_FILES
+        "${CMAKE_SOURCE_DIR}/include/*.h"
+        "${CMAKE_SOURCE_DIR}/include/*.hpp"
+        )
+
+        target_sources(${PROJECT_NAME}
+        PRIVATE
+                ${HEADERS_FILES}
+        )
+
+        source_group(
+        TREE "${CMAKE_SOURCE_DIR}/include"
+        PREFIX "Header Files"
+        FILES ${HEADERS_FILES}
+        )
+
+        source_group(
+        TREE "${CMAKE_SOURCE_DIR}/src"
+        PREFIX "Source Files"
+        FILES ${SOURCES_FILES}
+        )
+endif()
+
+
+
 message("Build Setup")
 
