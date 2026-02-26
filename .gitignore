@@ -8,3 +8,34 @@
 /Release
 
 
+# Build output
+Engine3D/Engine3D/x64/
+x86/
+Engine3D/bin/
+build/
+Engine3D/x64/Debug/
+Release/
+
+# Visual Studio
+Engine3D/.vs
+*.user
+*.suo
+*.aps
+*.ncb
+*.sdf
+*.opensdf
+ipch/
+
+# Compiled files
+
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.dll
+*.exe
+
+# Shader compiled output
+*.spv
+
+
