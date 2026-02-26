@@ -6,7 +6,8 @@
 ..gitignore.kate-swp
 /Debug
 /Release
-
+#lib
+Engine3D/external/
 
 # Build output
 Engine3D/Engine3D/x64/
