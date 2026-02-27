@@ -80,6 +80,7 @@ public:
 		meshVulkans.push_back(std::move(meshVulkan));
 	}
 
+	std::vector<std::pair<uint32_t, glm::mat4>> sceneObjects;
 	
 public:
 	Window* window = nullptr;
@@ -605,30 +606,38 @@ public:
 		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapChainExtent.width), static_cast<float>(swapChainExtent.height), 0.0f, 1.0f));
 		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapChainExtent));
 
-		glm::mat4 model;
-		model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
-		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+		if (sceneObjects.size() <= 0)
+		{
+			std::cout << "deso c vide" << std::endl;
+		}
 
-		commandBuffer.pushConstants<glm::mat4>(
-			*pipelineLayout,
-			vk::ShaderStageFlagBits::eVertex,
-			0,
-			model
-		);
+		for (const auto& object : sceneObjects)
+		{
+			auto& mesh = meshVulkans[object.first];
+			commandBuffer.pushConstants<glm::mat4>(
+				*pipelineLayout,
+				vk::ShaderStageFlagBits::eVertex,
+				0,
+				object.second
+			);
+
+			commandBuffer.bindVertexBuffers(0, *mesh.vertexBuffer, { 0 });
+			commandBuffer.bindIndexBuffer(mesh.indexBuffer, 0, vk::IndexType::eUint32);
+			commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, *descriptorSets[frameIndex], nullptr);
+			commandBuffer.drawIndexed(mesh.index, 1, 0, 0, 0);
+		}
+
 
 		if (meshVulkans.size() <= 0)
 		{
 			std::cout << "personne dans le vecteur" << std::endl;
 		}
 
-		for (auto& mesh : meshVulkans)
-		{
-			commandBuffer.bindVertexBuffers(0, *mesh.vertexBuffer, { 0 });
-			commandBuffer.bindIndexBuffer(mesh.indexBuffer, 0, vk::IndexType::eUint32);
-			commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, *descriptorSets[frameIndex], nullptr);
-			commandBuffer.drawIndexed(mesh.index, 1, 0, 0, 0);
-			
-		}
+		//for (auto& mesh : meshVulkans)
+		//{
+		//	
+		//	
+		//}
 
 		commandBuffer.endRendering();
 		// After rendering, transition the swapchain image to PRESENT_SRC
@@ -700,8 +709,8 @@ public:
 		float time = std::chrono::duration<float>(currentTime - startTime).count();
 
 		UniformBufferObject ubo{};
-		ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
+		/*ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));*/
+		sceneObjects[1].second = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		ubo.view = camera->getViewMatrix();
 		ubo.proj = camera->getProjectionMatrix(
 			static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height)

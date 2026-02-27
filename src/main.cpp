@@ -10,9 +10,12 @@ int main()
 		monkey.LoadModel("../shaders/monkey.obj");
 
 		Mesh cube;
-		monkey.LoadModel("../shaders/box.obj");
-
+		cube.LoadModel("../shaders/box.obj");
+		
 		app.initWindow();
+		app.sceneObjects.push_back(std::make_pair(0, glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f))));
+		app.sceneObjects.push_back(std::make_pair(1, glm::translate(glm::mat4(0.5f), glm::vec3(2.0f, 0.0f, 0.0f))));
+
 		app.createInstance();
 		app.setupDebugMessenger();
 		app.createSurface();
@@ -25,6 +28,7 @@ int main()
 		app.createTextureImage();
 		app.createCommandPool();
 		app.Vulkan(monkey.GetVertices(), monkey.GetIndices());
+		app.Vulkan(cube.GetVertices(), cube.GetIndices());
 		app.createUniformBuffers();
 		app.createDescriptorPool();
 		app.createDescriptorSets();
