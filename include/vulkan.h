@@ -1,187 +1,57 @@
 #pragma once
+#include <algorithm>
+#include <array>
+#include <assert.h>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <filesystem>
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <stdexcept>
+#include <vector>
+#define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
+#include "camera.h"
+
+#if defined(__INTELLISENSE__) || !defined(USE_CPP20_MODULES)
+#	include <vulkan/vulkan_raii.hpp>
+#else
+import vulkan_hpp;
+#endif
+
+#include <chrono>
+
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+constexpr int      MAX_FRAMES_IN_FLIGHT = 2;
+
+const std::vector<char const*> validationLayers = {
+	"VK_LAYER_KHRONOS_validation" };
+
+#ifdef NDEBUG
+constexpr bool enableValidationLayers = false;
+#else
+constexpr bool enableValidationLayers = true;
+#endif
+
+#include "vertex.h"
 
 
-#include "mesh.h"
-
-//struct Vertex
-//{
-//	glm::vec3 pos;
-//	glm::vec3 normal;
-//	glm::vec2 uv;
-//
-//	static vk::VertexInputBindingDescription getBindingDescription()
-//	{
-//		return { 0, sizeof(Vertex), vk::VertexInputRate::eVertex };
-//	}
-//
-//	static std::array<vk::VertexInputAttributeDescription, 3> getAttributeDescriptions()
-//	{
-//		return {
-//			vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, pos)),
-//			vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, normal)),
-//			vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, uv)) };
-//	}
-//
-//};
-//
-//struct UniformBufferObject
-//{
-//	glm::mat4 model;
-//	glm::mat4 view;
-//	glm::mat4 proj;
-//};
-
-//std::vector<Vertex> vertices;
-//std::vector<uint32_t> indices;
-
-Mesh LoadModel(const std::string& filePath)
+struct MeshVulkan
 {
-	Mesh mesh;
-	mesh.vertices.clear();
-	mesh.indices.clear();
-
-	auto rapidObj = rapidobj::ParseFile(filePath);
-
-	if (!std::filesystem::exists(filePath))
-	{
-		throw std::runtime_error("model file not found! " + std::filesystem::absolute(filePath).string());
-	}
-
-	if (rapidObj.error)
-	{
-		throw std::runtime_error("Failed to load model! " + rapidObj.error.line);
-	}
-
-	rapidobj::Triangulate(rapidObj);
-
-	for (const auto& shape : rapidObj.shapes)
-	{
-		for (const auto& index : shape.mesh.indices)
-		{
-			Vertex vertex{};
-			vertex.pos =
-			{
-				rapidObj.attributes.positions[3 * index.position_index + 0],
-				rapidObj.attributes.positions[3 * index.position_index + 1],
-				rapidObj.attributes.positions[3 * index.position_index + 2]
-
-			};
+	vk::raii::Buffer vertexBuffer = nullptr;
+	vk::raii::DeviceMemory vertexBufferMemory = nullptr;
+	vk::raii::Buffer indexBuffer = nullptr;
+	vk::raii::DeviceMemory indicesBufferMemory = nullptr;
+	uint32_t index = 0;
+};
 
 
-			if (index.normal_index != -1)
-			{
-				vertex.normal =
-				{
-					rapidObj.attributes.normals[3 * index.normal_index + 0],
-					rapidObj.attributes.normals[3 * index.normal_index + 1],
-					rapidObj.attributes.normals[3 * index.normal_index + 2],
-				};
-			}
-			else
-			{
-				vertex.normal = { 0.0f, 1.0f, 0.0f };
-			};
+std::vector<MeshVulkan> meshVulkans;
 
-			if (index.texcoord_index != -1)
-			{
-				vertex.uv =
-				{
-					rapidObj.attributes.texcoords[2 * index.texcoord_index + 0],
-					1.0f - rapidObj.attributes.texcoords[2 * index.texcoord_index + 1]
-
-				};
-			}
-			else
-			{
-				vertex.uv = { 0.0f, 0.0f };
-			};
-
-			mesh.indices.push_back(static_cast<uint32_t>(mesh.indices.size()));
-			mesh.vertices.push_back(vertex);
-		}
-	}
-
-	std::cout << "Loaded model with " << mesh.vertices.size() << " vertices." << std::endl;
-	std::cout << "Loaded model with " << mesh.indices.size() << " indices." << std::endl;
-	return mesh;
-}
-
-
-//class ThirdPersonCamera : public Camera
-//{
-//private:
-//	glm::vec3 targetPosition;
-//	glm::vec3 targetForward;
-//	float followDistance;
-//	float followHeight;
-//	float followSmoothness;
-//	float minDstance;
-//	float raycastDistance;
-//	glm::vec3 desiredPosition;
-//	glm::vec3 smoothDampVelocity;
-//
-//public:
-//
-//	ThirdPersonCamera(
-//		float followDistance = 5.0f,
-//		float followHeight = 2.0f,
-//		float followSmoothness = 0.1f,
-//		float minDistance = 1.0f
-//	);
-//
-//	void updatePosition(
-//		const glm::vec3& targetPos,
-//		const glm::vec3& targetFwd,
-//		float deltaTime
-//	)
-//	{
-//		targetPosition = targetPos;
-//		targetForward = glm::normalize(targetFwd);
-//		glm::vec3 offset = -targetForward * followDistance;
-//		offset.y = followHeight;
-//
-//		desiredPosition = targetPosition + offset;
-//
-//		camera.SetPosition(glm::mix(camera.getPosition(), desiredPosition, 1.0f - pow(followSmoothness, deltaTime * 60.0f)));
-//
-//		camera.SetFront(glm::normalize(targetPosition - camera.getPosition()));
-//
-//		camera.SetRight(glm::normalize(glm::cross(camera.getFront(), camera.GetWordlUp())));
-//		camera.SetUp(glm::normalize(glm::cross(camera.GetRight(), camera.getFront())));
-//	}
-//	//void handleOcclusion(const Scene& scene) {
-//	// Cast a ray from the target to the desired camera position
-//	//Ray ray;
-//	//ray.origin = targetPosition;
-//	//ray.direction = glm::normalize(desiredPosition - targetPosition);
-//
-//	//// Check for intersections with scene objects
-//	//RaycastHit hit;
-//	//if (scene.raycast(ray, hit, glm::length(desiredPosition - targetPosition))) {
-//	//	// If there's an intersection, move the camera to the hit point
-//	//	// minus a small offset to avoid clipping
-//	//	float offsetDistance = 0.2f;
-//	//	position = hit.point - (ray.direction * offsetDistance);
-//
-//	//	// Ensure we don't get too close to the target
-//	//	float currentDistance = glm::length(position - targetPosition);
-//	//	if (currentDistance < minDistance) {
-//	//		position = targetPosition + ray.direction * minDistance;
-//	//	}
-//
-//	//	// Update the camera to look at the target
-//	//	front = glm::normalize(targetPosition - position);
-//	//	right = glm::normalize(glm::cross(front, worldUp));
-//	//	up = glm::normalize(glm::cross(right, front));
-//	//}
-//	void orbit(float horizontalAngle, float verticalAngle);
-//
-//	void setFollowDistance(float distance) { followDistance = distance; }
-//	void setFollowHeight(float height) { followHeight = height; }
-//	void setFollowSmoothness(float smoothness) { followSmoothness = smoothness; }
-//};
-
-std::vector<Mesh> meshes;
 
 class HelloTriangleApplication
 {
@@ -191,30 +61,27 @@ public:
 		window = new Window();
 		camera = std::make_unique<Camera>(window);
 
-		monkey = LoadModel("../shaders/monkey.obj");
-		box = LoadModel("../shaders/stormtrooper.obj");
-
-		meshes.push_back(std::move(box));
-		meshes.push_back(std::move(monkey));
-
 	}
 	~HelloTriangleApplication()
 	{
 		delete window;
 		window = nullptr;
 	}
+		
 
-	void run()
+	void Vulkan(const std::vector<Vertex>& vertices, const std::vector<uint32_t> indices)
 	{
-
-		initWindow();
-		initVulkan();
-		camera->setupInputCallbacks();
-		mainLoop();
-		cleanup();
+		MeshVulkan meshVulkan;
+		
+		meshVulkan.index = static_cast<uint32_t>(indices.size());
+		createVertexBuffer(vertices, meshVulkan.vertexBuffer, meshVulkan.vertexBufferMemory);
+		createIndexBuffer(indices, meshVulkan.indexBuffer, meshVulkan.indicesBufferMemory);
+		
+		meshVulkans.push_back(std::move(meshVulkan));
 	}
 
-private:
+	
+public:
 	Window* window = nullptr;
 	vk::raii::Context                context;
 	vk::raii::Instance               instance = nullptr;
@@ -249,8 +116,32 @@ private:
 	std::vector<vk::raii::Fence>     inFlightFences;
 	uint32_t                         frameIndex = 0;
 	std::unique_ptr<Camera> camera;
-	Mesh monkey;
-	Mesh box;
+
+
+public:
+
+	vk::VertexInputBindingDescription getBindingDescription()
+	{
+		return vk::VertexInputBindingDescription{
+			.binding = 0,
+			.stride = sizeof(Vertex),
+			.inputRate = vk::VertexInputRate::eVertex
+		};
+	}
+
+	std::array<vk::VertexInputAttributeDescription, 3> getAttributeDescriptions()
+	{
+		return { {
+			{.location = 0, .binding = 0, .format = vk::Format::eR32G32B32Sfloat,
+			  .offset = offsetof(Vertex, pos)    },
+			{.location = 1, .binding = 0, .format = vk::Format::eR32G32B32Sfloat,
+			  .offset = offsetof(Vertex, normal) },
+			{.location = 2, .binding = 0, .format = vk::Format::eR32G32Sfloat,
+			  .offset = offsetof(Vertex, uv)     },
+		} };
+	}
+
+public:
 
 	bool framebufferResized = false;
 
@@ -268,27 +159,6 @@ private:
 		app->framebufferResized = true;
 	}*/
 
-	void initVulkan()
-	{
-		createInstance();
-		setupDebugMessenger();
-		createSurface();
-		pickPhysicalDevice();
-		createLogicalDevice();
-		createSwapChain();
-		createImageViews();
-		createDescriptorSetLayout();
-		createGraphicsPipeline();
-		createTextureImage();
-		createCommandPool();
-		createVertexBuffer();
-		createIndexBuffer();
-		createUniformBuffers();
-		createDescriptorPool();
-		createDescriptorSets();
-		createCommandBuffers();
-		createSyncObjects();
-	}
 
 	void mainLoop()
 	{
@@ -533,8 +403,8 @@ private:
 		vk::PipelineShaderStageCreateInfo fragShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eFragment, .module = shaderModule, .pName = "fragMain" };
 		vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
-		auto                                     bindingDescription = Vertex::getBindingDescription();
-		auto                                     attributeDescriptions = Vertex::getAttributeDescriptions();
+		auto                                     bindingDescription = getBindingDescription();
+		auto                                     attributeDescriptions = getAttributeDescriptions();
 		vk::PipelineVertexInputStateCreateInfo   vertexInputInfo{ .vertexBindingDescriptionCount = 1, .pVertexBindingDescriptions = &bindingDescription, .vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()), .pVertexAttributeDescriptions = attributeDescriptions.data() };
 		vk::PipelineInputAssemblyStateCreateInfo inputAssembly{ .topology = vk::PrimitiveTopology::eTriangleList };
 		vk::PipelineViewportStateCreateInfo      viewportState{ .viewportCount = 1, .scissorCount = 1 };
@@ -588,55 +458,36 @@ private:
 		commandPool = vk::raii::CommandPool(device, poolInfo);
 	}
 
-	void createVertexBuffer()
+	void createVertexBuffer(std::vector<Vertex> vertices, vk::raii::Buffer& vertexBuffer, vk::raii::DeviceMemory& vertexBufferMemory)
 	{
-		for (auto& mesh : meshes)
-		{
-			if (mesh.vertices.empty())
-			{
-				std::cerr << "vertices mesh is empty" << std::endl;
-			}
+		vk::DeviceSize         bufferSize = sizeof(vertices[0]) * vertices.size();
+		vk::raii::Buffer       stagingBuffer({});
+		vk::raii::DeviceMemory stagingBufferMemory({});
 
-			vk::DeviceSize         bufferSize = sizeof(mesh.vertices[0]) * mesh.vertices.size();
-			vk::raii::Buffer       stagingBuffer({});
-			vk::raii::DeviceMemory stagingBufferMemory({});
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory); void* dataStaging = stagingBufferMemory.mapMemory(0, bufferSize);
+		memcpy(dataStaging, vertices.data(), bufferSize);
+		stagingBufferMemory.unmapMemory();
 
-			createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory); void* dataStaging = stagingBufferMemory.mapMemory(0, bufferSize);
-			memcpy(dataStaging, mesh.vertices.data(), bufferSize);
-			stagingBufferMemory.unmapMemory();
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, vertexBuffer, vertexBufferMemory);
 
-			createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mesh.vertexBuffer, mesh.vertexBufferMemory);
-
-			copyBuffer(stagingBuffer, mesh.vertexBuffer, bufferSize);
-
-		}
-		if (meshes.empty())
-		{
-			std::cerr << "meshes is empty" << std::endl;
-		}
-
+		copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
 	}
 
-	void createIndexBuffer()
+	void createIndexBuffer(std::vector<uint32_t> indices, vk::raii::Buffer& indexBuffer, vk::raii::DeviceMemory& indexBufferMemory)
 	{
-		for (auto& mesh : meshes)
-		{
-			vk::DeviceSize bufferSize = sizeof(mesh.indices[0]) * mesh.indices.size();
+		vk::DeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+		vk::raii::Buffer       stagingBuffer({});
+		vk::raii::DeviceMemory stagingBufferMemory({});
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 
-			vk::raii::Buffer       stagingBuffer({});
-			vk::raii::DeviceMemory stagingBufferMemory({});
-			createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+		void* data = stagingBufferMemory.mapMemory(0, bufferSize);
+		memcpy(data, indices.data(), (size_t)bufferSize);
+		stagingBufferMemory.unmapMemory();
 
-			void* data = stagingBufferMemory.mapMemory(0, bufferSize);
-			memcpy(data, mesh.indices.data(), (size_t)bufferSize);
-			stagingBufferMemory.unmapMemory();
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, indexBuffer, indexBufferMemory);
 
-			createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mesh.indexBuffer, mesh.indexBufferMemory);
-
-			copyBuffer(stagingBuffer, mesh.indexBuffer, bufferSize);
-
-		}
+		copyBuffer(stagingBuffer, indexBuffer, bufferSize);
 	}
 
 	void createUniformBuffers()
@@ -754,32 +605,31 @@ private:
 		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapChainExtent.width), static_cast<float>(swapChainExtent.height), 0.0f, 1.0f));
 		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapChainExtent));
 
-		for (size_t i = 0; i < meshes.size(); ++i)
+		glm::mat4 model;
+		model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+
+		commandBuffer.pushConstants<glm::mat4>(
+			*pipelineLayout,
+			vk::ShaderStageFlagBits::eVertex,
+			0,
+			model
+		);
+
+		if (meshVulkans.size() <= 0)
 		{
-			glm::mat4 model;
-
-			if (i == 0) {
-				model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
-			}
-			else {
-				model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-			}
-
-			commandBuffer.pushConstants<glm::mat4>(
-				*pipelineLayout,
-				vk::ShaderStageFlagBits::eVertex,
-				0,
-				model
-			);
+			std::cout << "personne dans le vecteur" << std::endl;
 		}
 
-		for (const auto& mesh : meshes)
+		for (auto& mesh : meshVulkans)
 		{
 			commandBuffer.bindVertexBuffers(0, *mesh.vertexBuffer, { 0 });
-			commandBuffer.bindIndexBuffer(*mesh.indexBuffer, 0, vk::IndexType::eUint32);
+			commandBuffer.bindIndexBuffer(mesh.indexBuffer, 0, vk::IndexType::eUint32);
 			commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, *descriptorSets[frameIndex], nullptr);
-			commandBuffer.drawIndexed(mesh.indices.size(), 1, 0, 0, 0);
+			commandBuffer.drawIndexed(mesh.index, 1, 0, 0, 0);
+			
 		}
+
 		commandBuffer.endRendering();
 		// After rendering, transition the swapchain image to PRESENT_SRC
 		transition_image_layout(
@@ -1016,18 +866,3 @@ private:
 		return buffer;
 	}
 };
-
-
-void step0()
-{
-	try
-	{
-		HelloTriangleApplication app;
-		app.run();
-	}
-	catch (const std::exception& e)
-	{
-		std::cerr << e.what() << std::endl;
-	}
-
-}
