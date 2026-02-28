@@ -30,7 +30,7 @@ public:
 
         std::size_t typeID = Component::GetTypeID<T>();
 
-        auto it = componentMap.find(typeID);/
+        auto it = componentMap.find(typeID);
         if (it != componentMap.end())
             return static_cast<T*>(it->second);
 

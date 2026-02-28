@@ -8,16 +8,13 @@
 import vulkan_hpp;
 #endif
 
-//#define GLFW_INCLUDE_VULKAN        // REQUIRED only for GLFW CreateWindowSurface.
-//#include <GLFW/glfw3.h>
-//#include <glm/glm.hpp>
 
 
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "window.h"
-
+#include "Component.h"
 
 enum class CameraMovement
 {
@@ -30,7 +27,7 @@ enum class CameraMovement
 };
 
 
-class Camera
+class Camera : public Component
 {
 public:
 	//Camera(
@@ -66,7 +63,6 @@ public:
 
 		updateCameraVectors();
 	}
-
 
 	void processKeyboard(CameraMovement direction, float deltaTime);
 	void processInput(Window& window, Camera& camera, float deltaTime);

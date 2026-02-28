@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include "Entity.h"
+#include "input.h"
 
 class TransformComponent : public Component
 {
@@ -53,7 +54,7 @@ public:
 			transformDirty = false;
 		}
 		return transformationMatrix;
-		}
+	}
 };
 
 /*class MeshComponent : public Component
@@ -96,12 +97,12 @@ private:
 	mutable bool projectionDirty = true;
 
 public:
-	void SetPerspective(float fov, float aspect, float near, float far)
+	void SetPerspective(float fov, float aspect, float Near, float Far)
 	{
 		fieldOfView = fov;
 		aspectRatio = aspect;
-		nearPlane = near;
-		farPlane = far;
+		nearPlane = Near;
+		farPlane = Far;
 		projectionDirty = true;
 	}
 
@@ -133,6 +134,45 @@ public:
 		}
 		return projectionMatrix;
 	}
+};
+
+class CameraControllerComponent : public Component
+{
+public:
+	float speed = 5.0f;
+	void Update(float dt) override
+	{
+		auto transform = GetOwner()->GetComponent<TransformComponent> ();
+
+		if (!transform)
+		{
+			return;
+		}
+
+		glm::vec3 position = transform->GetPosition();
+		glm::quat rotation = transform->GetRotation();
+		glm::vec3 forward = rotation * glm::vec3(0,0,-1);
+		glm::vec3 right = rotation * glm::vec3(1, 0, 0);
+
+		if (input::keyPressed(input::KEY::KEY_Z))
+		{
+			position += forward * speed * dt;
+		}
+		if (input::keyPressed(input::KEY::KEY_S))
+		{
+			position -= forward * speed * dt;
+		}
+		if (input::keyPressed(input::KEY::KEY_Q))
+		{
+			position += right * speed * dt;
+		}
+		if (input::keyPressed(input::KEY::KEY_D))
+		{
+			position -= right * speed * dt;
+		}
+		transform->SetPosition(position);
+	}
+
 };
 
 class LightComponent : public Component

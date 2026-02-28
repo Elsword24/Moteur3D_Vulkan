@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "BaseComponent.h"
 
 int main()
 {
@@ -11,10 +12,18 @@ int main()
 
 		Mesh cube;
 		cube.LoadModel("../shaders/box.obj");
+
+		Entity* camera = new Entity("mainCamera");
+		auto transform = camera->AddComponent<TransformComponent>();
+		camera->AddComponent<CameraComponent>();
+		camera->AddComponent<CameraControllerComponent>();
+
+		transform->SetPosition(glm::vec3(1, 1, 1));
 		
 		app.initWindow();
-		app.sceneObjects.push_back(std::make_pair(0, glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f))));
-		app.sceneObjects.push_back(std::make_pair(1, glm::translate(glm::mat4(0.5f), glm::vec3(2.0f, 0.0f, 0.0f))));
+		input::init(app.window->getGLFWWindow());
+		app.sceneObjects.push_back(std::make_pair(0, glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, -2.0f))));
+		app.sceneObjects.push_back(std::make_pair(1, glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f))));
 
 		app.createInstance();
 		app.setupDebugMessenger();
@@ -34,7 +43,8 @@ int main()
 		app.createDescriptorSets();
 		app.createCommandBuffers();
 		app.createSyncObjects();
-		app.camera->setupInputCallbacks();
+		app.camTest = camera;
+		//app.camera->setupInputCallbacks();
 		app.mainLoop();
 		app.cleanup();
 	}

@@ -31,26 +31,26 @@ void Camera::processKeyboard(CameraMovement direction, float deltaTime)
 void Camera::processInput(Window& window, Camera& camera, float deltaTime)
 {
 
-	if (window.GetKey(input::keyPressed(input::Key::KEY_Z)) == input::inputState::PRESSED)
+	if (window.GetKey(input::keyPressed(input::KEY::KEY_Z)) == input::inputState::PRESSED)
 	{
 		camera.processKeyboard(CameraMovement::FORWARD, deltaTime);
 	}
-	if (window.GetKey(input::keyPressed(input::Key::KEY_S)) == input::inputState::PRESSED)
+	if (window.GetKey(input::keyPressed(input::KEY::KEY_S)) == input::inputState::PRESSED)
 	{
 		camera.processKeyboard(CameraMovement::BACKWARD, deltaTime);
 	}
-	if (window.GetKey(input::keyPressed(input::Key::KEY_D)) == input::inputState::PRESSED)
+	if (window.GetKey(input::keyPressed(input::KEY::KEY_D)) == input::inputState::PRESSED)
 	{
 		camera.processKeyboard(CameraMovement::LEFT, deltaTime);
 	}
-	if (window.GetKey(input::keyPressed(input::Key::KEY_Q)) == input::inputState::PRESSED)
+	if (window.GetKey(input::keyPressed(input::KEY::KEY_Q)) == input::inputState::PRESSED)
 	{
 		camera.processKeyboard(CameraMovement::RIGHT, deltaTime);
 	}
 
-	if (window.GetKey(input::keyPressed(input::Key::KEY_W)) == input::inputState::PRESSED)
+	if (window.GetKey(input::keyPressed(input::KEY::KEY_W)) == input::inputState::PRESSED)
 		camera.processKeyboard(CameraMovement::UP, deltaTime);
-	if (window.GetKey(input::keyPressed(input::Key::KEY_X)) == input::inputState::PRESSED)
+	if (window.GetKey(input::keyPressed(input::KEY::KEY_X)) == input::inputState::PRESSED)
 		camera.processKeyboard(CameraMovement::DOWN, deltaTime);
 }
 

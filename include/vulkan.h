@@ -12,7 +12,8 @@
 #include <stdexcept>
 #include <vector>
 #define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
-#include "camera.h"
+#include "window.h"
+#include "BaseComponent.h"
 
 #if defined(__INTELLISENSE__) || !defined(USE_CPP20_MODULES)
 #	include <vulkan/vulkan_raii.hpp>
@@ -23,6 +24,7 @@ import vulkan_hpp;
 #include <chrono>
 
 #define GLM_FORCE_RADIANS
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -59,8 +61,8 @@ public:
 	HelloTriangleApplication()
 	{
 		window = new Window();
-		camera = std::make_unique<Camera>(window);
-
+		//camera = std::make_unique<Camera>(window);
+		
 	}
 	~HelloTriangleApplication()
 	{
@@ -83,7 +85,7 @@ public:
 	std::vector<std::pair<uint32_t, glm::mat4>> sceneObjects;
 	
 public:
-	Window* window = nullptr;
+	Window*                          window = nullptr;
 	vk::raii::Context                context;
 	vk::raii::Instance               instance = nullptr;
 	vk::raii::DebugUtilsMessengerEXT debugMessenger = nullptr;
@@ -116,7 +118,8 @@ public:
 	std::vector<vk::raii::Semaphore> renderFinishedSemaphores;
 	std::vector<vk::raii::Fence>     inFlightFences;
 	uint32_t                         frameIndex = 0;
-	std::unique_ptr<Camera> camera;
+	//std::unique_ptr<Camera> camera;
+	Entity* camTest = nullptr;
 
 
 public:
@@ -166,7 +169,10 @@ public:
 		while (!window->WindowClosed())
 		{
 			window->PollEvent();
-			camera->processInput(*window, *camera, 0.16f);
+			//camera->processInput(*window, *camera, 0.16f);
+			auto Cam = camTest->GetComponent<CameraControllerComponent>();
+			Cam->Update(0.16f);
+
 			drawFrame();
 		}
 
@@ -622,8 +628,8 @@ public:
 			);
 
 			commandBuffer.bindVertexBuffers(0, *mesh.vertexBuffer, { 0 });
-			commandBuffer.bindIndexBuffer(mesh.indexBuffer, 0, vk::IndexType::eUint32);
-			commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, *descriptorSets[frameIndex], nullptr);
+			commandBuffer.bindIndexBuffer(*mesh.indexBuffer, 0, vk::IndexType::eUint32);
+			commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, *pipelineLayout, 0, *descriptorSets[frameIndex], nullptr);
 			commandBuffer.drawIndexed(mesh.index, 1, 0, 0, 0);
 		}
 
@@ -633,11 +639,6 @@ public:
 			std::cout << "personne dans le vecteur" << std::endl;
 		}
 
-		//for (auto& mesh : meshVulkans)
-		//{
-		//	
-		//	
-		//}
 
 		commandBuffer.endRendering();
 		// After rendering, transition the swapchain image to PRESENT_SRC
@@ -708,13 +709,16 @@ public:
 		auto  currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float>(currentTime - startTime).count();
 
+		auto cam = camTest->GetComponent<CameraComponent>();
 		UniformBufferObject ubo{};
-		/*ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));*/
 		sceneObjects[1].second = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		ubo.view = camera->getViewMatrix();
-		ubo.proj = camera->getProjectionMatrix(
-			static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height)
-		);
+
+		float aspect = static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height);
+		cam->SetPerspective(45.0f, aspect, 0.1f, 1000.0f);
+
+		ubo.view = cam->GetViewMatrix();
+		ubo.proj = cam->GetProjectionMatrix();
+
 
 		ubo.proj[1][1] *= -1;
 
