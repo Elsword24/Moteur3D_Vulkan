@@ -166,8 +166,13 @@
   </ItemGroup>
   <ItemGroup>
     <SlangCompileTask Include="shaders\shader.slang">
-      <Entrypoints>vertMain;fragMain</Entrypoints>
-    </SlangCompileTask>
+    <Entrypoints>vertMain;fragMain</Entrypoints>
+    <OutputFilename>$(ProjectDir)shaders\shader.spv</OutputFilename>
+  </SlangCompileTask>
+  <SlangCompileTask Include="shaders\DrawTriangle.slang">
+    <Entrypoints>vertMain;fragMain</Entrypoints>
+    <OutputFilename>$(ProjectDir)shaders\DrawTriangle.spv</OutputFilename>
+  </SlangCompileTask>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

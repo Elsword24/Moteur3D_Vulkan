@@ -266,11 +266,9 @@ private:
 private:
 	std::vector<vk::raii::ImageView> swapChainImageViews;
 
-
-
-
-
-
+private:
+	vk::raii::PipelineLayout pipelineLayout = nullptr;
+	vk::raii::Pipeline		 graphicsPipeline = nullptr;
 
 private:
 
@@ -464,10 +462,12 @@ private:
 		//query for Vulkan 1.3 features
 		vk::StructureChain
 			<vk::PhysicalDeviceFeatures2,
+			vk::PhysicalDeviceVulkan11Features,
 			vk::PhysicalDeviceVulkan13Features,
 			vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> featureChain =
 		{
 		{},								//vk::PhysicalDeviceFeatures2
+		{.shaderDrawParameters = true},  //vk::PhysicalDeviceVulkan11Features
 		{.dynamicRendering = true},	    //vk::PhysicalDeviceVulkan13Features
 		{.extendedDynamicState = true}	//vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT
 		};
@@ -607,7 +607,7 @@ private:
 	}
 	void createGraphicsPipeline()
 	{
-		vk::raii::ShaderModule shaderModule = createShaderModule(readFile("shaders/slang.spv"));
+		vk::raii::ShaderModule shaderModule = createShaderModule(readFile("shaders/DrawTriangle.spv"));
 
 		vk::PipelineShaderStageCreateInfo vertShaderStageInfo
 		{
@@ -626,6 +626,98 @@ private:
 		};
 
 		vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+
+		vk::PipelineVertexInputStateCreateInfo   vertexInputInfo;
+
+		vk::PipelineInputAssemblyStateCreateInfo inputAssembly
+		{ 
+			.topology = vk::PrimitiveTopology::eTriangleList 
+		};
+
+		vk::PipelineViewportStateCreateInfo      viewportState
+		{ 
+			.viewportCount = 1,
+			.scissorCount = 1 
+		};
+
+		vk::PipelineRasterizationStateCreateInfo rasterizer
+		{ 
+			.depthClampEnable = vk::False,
+			.rasterizerDiscardEnable = vk::False,
+			.polygonMode = vk::PolygonMode::eFill,
+			.cullMode = vk::CullModeFlagBits::eBack,
+			.frontFace = vk::FrontFace::eClockwise,
+			.depthBiasEnable = vk::False,
+			.depthBiasSlopeFactor = 1.0f,
+			.lineWidth = 1.0f 
+		};
+
+		vk::PipelineMultisampleStateCreateInfo multisampling
+		{ 
+			.rasterizationSamples = vk::SampleCountFlagBits::e1,
+			.sampleShadingEnable = vk::False 
+		};
+
+		vk::PipelineColorBlendAttachmentState colorBlendAttachment
+		{ 
+			.blendEnable = vk::False,
+			.colorWriteMask = 
+			vk::ColorComponentFlagBits::eR |
+			vk::ColorComponentFlagBits::eG |
+			vk::ColorComponentFlagBits::eB |
+			vk::ColorComponentFlagBits::eA 
+		};
+
+		vk::PipelineColorBlendStateCreateInfo colorBlending
+		{ 
+			.logicOpEnable = vk::False,
+			.logicOp = vk::LogicOp::eCopy,
+			.attachmentCount = 1,
+			.pAttachments = &colorBlendAttachment 
+		};
+
+		std::vector dynamicStates = 
+		{
+			vk::DynamicState::eViewport,
+			vk::DynamicState::eScissor 
+		};
+
+		vk::PipelineDynamicStateCreateInfo dynamicState
+		{ 
+			.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
+			.pDynamicStates = dynamicStates.data() 
+		};
+
+		vk::PipelineLayoutCreateInfo pipelineLayoutInfo
+		{ 
+			.setLayoutCount = 0,
+			.pushConstantRangeCount = 0 
+		};
+
+		pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);
+
+		vk::StructureChain<vk::GraphicsPipelineCreateInfo, vk::PipelineRenderingCreateInfo> pipelineCreateInfoChain = 
+		{
+			{
+				.stageCount = 2,
+				.pStages = shaderStages,
+				.pVertexInputState = &vertexInputInfo,
+				.pInputAssemblyState = &inputAssembly,
+				 .pViewportState = &viewportState,
+				 .pRasterizationState = &rasterizer,
+				 .pMultisampleState = &multisampling,
+				 .pColorBlendState = &colorBlending,
+				 .pDynamicState = &dynamicState,
+				 .layout = pipelineLayout,
+				 .renderPass = nullptr
+			},
+			{
+				.colorAttachmentCount = 1,
+				.pColorAttachmentFormats = &swapChainImageFormat
+			} 
+		};
+
+		graphicsPipeline = vk::raii::Pipeline(device, nullptr, pipelineCreateInfoChain.get<vk::GraphicsPipelineCreateInfo>());
 	}
 	void initVulkan()
 	{
@@ -636,7 +728,7 @@ private:
 		createLogicalDevice();
 		createSwapChain();
 		createImageViews();
-		//createGraphicsPipeline();
+		createGraphicsPipeline();
 	}
 
 	void mainLoop()
@@ -663,15 +755,7 @@ public:
 		cleanup();
 	}
 };
-class Renderer
-{
-private:
 
-public:
-	Renderer();
-	~Renderer() = default;
-
-};
 
 //class HelloTriangleApplication
 //{
