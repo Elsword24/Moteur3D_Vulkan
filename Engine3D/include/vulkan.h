@@ -23,6 +23,7 @@
 #include <memory>
 #include <stdexcept>
 #include <vector>
+#include <print>
 
 #ifndef NDEBUG
 # pragma comment(lib, "glfw3-s-d.lib")
@@ -274,6 +275,11 @@ private:
 private:
 	vk::raii::CommandPool commandPool = nullptr;
 	vk::raii::CommandBuffer  commandBuffer = nullptr;
+
+private:
+	vk::raii::Semaphore presentCompleteSemaphore = nullptr;
+	vk::raii::Semaphore renderFinishedSemaphore = nullptr;
+	vk::raii::Fence drawFence					= nullptr;
 
 private:
 
@@ -772,10 +778,10 @@ private:
 			imageIndex,
 			vk::ImageLayout::eUndefined,
 			vk::ImageLayout::eColorAttachmentOptimal,
-			{},
-			vk::AccessFlagBits2::eColorAttachmentWrite,
-			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-			vk::PipelineStageFlagBits2::eColorAttachmentOutput
+			{},																// srcAccessMask (no need to wait for previous operations)
+			vk::AccessFlagBits2::eColorAttachmentWrite,						// dstAccessMask
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,				// srcStage
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput				// dstStage
 		);
 
 		// Set up the color attachment
@@ -810,6 +816,30 @@ private:
 		commandBuffer.beginRendering(renderingInfo);
 
 		// Rendering commands will go here
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *graphicsPipeline);
+		commandBuffer.setViewport
+		(
+			0,
+			vk::Viewport
+			(
+				0.0f,
+				0.0f,
+				static_cast<float>(swapChainExtent.width),
+				static_cast<float>(swapChainExtent.height),
+				0.0f,
+				1.0f
+			)
+		);
+		commandBuffer.setScissor
+		(
+			0,
+			vk::Rect2D
+			(
+				vk::Offset2D(0, 0),
+				swapChainExtent
+			)
+		);
+		commandBuffer.draw(3, 1, 0, 0);
 
 		// End rendering
 		commandBuffer.endRendering();
@@ -819,10 +849,10 @@ private:
 			imageIndex,
 			vk::ImageLayout::eColorAttachmentOptimal,
 			vk::ImageLayout::ePresentSrcKHR,
-			vk::AccessFlagBits2::eColorAttachmentWrite,
-			{},
-			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-			vk::PipelineStageFlagBits2::eBottomOfPipe
+			vk::AccessFlagBits2::eColorAttachmentWrite,				// srcAccessMask
+			{},														// dstAccessMask
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,		// srcStage
+			vk::PipelineStageFlagBits2::eBottomOfPipe					// dstStage
 		);
 
 		commandBuffer.end();
@@ -848,6 +878,12 @@ private:
 
 		commandBuffer = std::move(vk::raii::CommandBuffers(device, allocInfo).front());
 	}
+	void createSyncObjects()
+	{
+		presentCompleteSemaphore = vk::raii::Semaphore(device, vk::SemaphoreCreateInfo());
+		renderFinishedSemaphore  = vk::raii::Semaphore(device, vk::SemaphoreCreateInfo());
+		drawFence				 = vk::raii::Fence(device, { .flags = vk::FenceCreateFlagBits::eSignaled });
+	}
 	void initVulkan()
 	{
 		createInstance();
@@ -860,14 +896,62 @@ private:
 		createGraphicsPipeline();
 		createCommandPool();
 		createCommandBuffer();
+		createSyncObjects();
 	}
 
+	void drawFrame()
+	{
+		queue.waitIdle();			// NOTE: for simplicity, wait for the queue to be idle before starting the frame
+									// In the next chapter you see how to use multiple frames in flight and fences to sync
+
+		auto [result, imageIndex] = swapchain.acquireNextImage(UINT64_MAX, *presentCompleteSemaphore, nullptr);
+		recordCommandBuffer(imageIndex);
+
+		device.resetFences(*drawFence);
+		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+		const vk::SubmitInfo submitInfo
+		{
+			.waitSemaphoreCount = 1,
+			.pWaitSemaphores = &*presentCompleteSemaphore,
+			.pWaitDstStageMask = &waitDestinationStageMask,
+			.commandBufferCount = 1,
+			.pCommandBuffers = &*commandBuffer,
+			.signalSemaphoreCount = 1,
+			.pSignalSemaphores = &*renderFinishedSemaphore
+		};
+		queue.submit(submitInfo, *drawFence);
+		result = device.waitForFences(*drawFence, vk::True, UINT64_MAX);
+		if (result != vk::Result::eSuccess)
+			throw std::runtime_error("Failed to wait for Fences !!!");
+
+		const vk::PresentInfoKHR presentInfoKHR
+		{
+			.waitSemaphoreCount = 1,
+			.pWaitSemaphores = &*renderFinishedSemaphore,
+			.swapchainCount = 1,
+			.pSwapchains = &*swapchain,
+			.pImageIndices = &imageIndex
+		};
+		result = queue.presentKHR(presentInfoKHR);
+		switch (result)
+		{
+		case vk::Result::eSuccess:
+			break;
+		case vk::Result::eSuboptimalKHR:
+			std::println("vk::Queue::presentKHR returned vk::Result::eSuboptimalKHR !");
+			break;
+		default:
+				break;			// an unexpected result is returned!
+		}
+	}
 	void mainLoop()
 	{
 		while (!glfwWindowShouldClose(window))
 		{
 			glfwPollEvents();
+			drawFrame();
 		}
+		device.waitIdle();	// wait for device to finish operations before destroying resources
 	}
 
 	void cleanup()
