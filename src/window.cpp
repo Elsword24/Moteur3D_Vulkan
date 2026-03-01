@@ -70,6 +70,7 @@ void Window::setScrollCallback(GLFWscrollfun callback)
 	glfwSetCursorPosCallback(m_window, callback);
 }
 
+
 //vk::Extent2D Window::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities)
 //{
 //	if (capabilities.currentExtent.width != 0xFFFFFFFF)

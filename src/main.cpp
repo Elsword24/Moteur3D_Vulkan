@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include "BaseComponent.h"
 #include "window.h"
+#include "InputManager.h"
 
 int main()
 {
@@ -8,6 +9,7 @@ int main()
 	{
 		Window window;
 		HelloTriangleApplication app;
+		InputMapper inputManager;
 
 		Mesh monkey;
 		monkey.LoadModel("../shaders/monkey.obj");
@@ -29,7 +31,7 @@ int main()
 		app.sceneObjects.push_back(std::make_pair(0, glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, -2.0f))));
 		app.sceneObjects.push_back(std::make_pair(1, glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f))));
 
-		int width = 600, height = 800;
+		int width = 1920, height = 1080;
 
 		app.createInstance();
 		app.setupDebugMessenger();
@@ -54,7 +56,7 @@ int main()
 		//app.mainLoop();
 		while (!window.WindowClosed())
 		{
-			window.PollEvent();
+			inputManager.Update();
 			//camera->processInput(*window, *camera, 0.16f);
 			auto Cam = app.camTest->GetComponent<CameraControllerComponent>();
 			Cam->Update(0.16f);
@@ -76,6 +78,6 @@ int main()
 	}
 	catch (const std::exception& e)
 	{
-		std::cerr << e.what() << std::endl;
+		std::cerr << e.what() << "\n";
 	}
 }

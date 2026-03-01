@@ -28,7 +28,9 @@ namespace input
 		KEY_SPACE,
 		KEY_LEFT_SHIFT,
 		KEY_RIGHT_SHIFT,
-
+		UNKNOWN,
+		MOUSE_LEFT,
+		MOUSE_RIGHT
 	};
 
 	
