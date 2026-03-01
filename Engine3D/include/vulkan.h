@@ -10,8 +10,8 @@
 
 #define GLFW_INCLUDE_VULKAN
 #define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
+#include "../external/include/GLFW/glfw3.h"
+#include "../external/include/GLFW/glfw3native.h"
 
 #include <algorithm>
 #include <assert.h>
@@ -478,7 +478,10 @@ private:
 		{
 		{},								//vk::PhysicalDeviceFeatures2
 		{.shaderDrawParameters = true},  //vk::PhysicalDeviceVulkan11Features
-		{.dynamicRendering = true},	    //vk::PhysicalDeviceVulkan13Features
+		{
+			.synchronization2 = true,
+			.dynamicRendering = true
+		},									//vk::PhysicalDeviceVulkan13Features
 		{.extendedDynamicState = true}	//vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT
 		};
 
