@@ -139,7 +139,7 @@ public:
 class CameraControllerComponent : public Component
 {
 public:
-	float speed = 5.0f;
+	float speed = 2.0f;
 	void Update(float dt) override
 	{
 		auto transform = GetOwner()->GetComponent<TransformComponent> ();

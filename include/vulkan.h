@@ -12,7 +12,6 @@
 #include <stdexcept>
 #include <vector>
 #define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
-#include "window.h"
 #include "BaseComponent.h"
 
 #if defined(__INTELLISENSE__) || !defined(USE_CPP20_MODULES)
@@ -60,14 +59,14 @@ class HelloTriangleApplication
 public:
 	HelloTriangleApplication()
 	{
-		window = new Window();
+		//window = new Window();
 		//camera = std::make_unique<Camera>(window);
 		
 	}
 	~HelloTriangleApplication()
 	{
-		delete window;
-		window = nullptr;
+		//delete window;
+		//window = nullptr;
 	}
 		
 
@@ -85,7 +84,7 @@ public:
 	std::vector<std::pair<uint32_t, glm::mat4>> sceneObjects;
 	
 public:
-	Window*                          window = nullptr;
+	//Window*                          window = nullptr;
 	vk::raii::Context                context;
 	vk::raii::Instance               instance = nullptr;
 	vk::raii::DebugUtilsMessengerEXT debugMessenger = nullptr;
@@ -152,10 +151,10 @@ public:
 	std::vector<const char*> requiredDeviceExtension = {
 		vk::KHRSwapchainExtensionName };
 
-	void initWindow()
-	{
-		window->initWindow();
-	}
+	//void initWindow()
+	//{
+	//	window->initWindow();
+	//}
 
 	/*static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 	{
@@ -164,20 +163,20 @@ public:
 	}*/
 
 
-	void mainLoop()
-	{
-		while (!window->WindowClosed())
-		{
-			window->PollEvent();
-			//camera->processInput(*window, *camera, 0.16f);
-			auto Cam = camTest->GetComponent<CameraControllerComponent>();
-			Cam->Update(0.16f);
+	//void mainLoop()
+	//{
+	//	while (!window->WindowClosed())
+	//	{
+	//		window->PollEvent();
+	//		//camera->processInput(*window, *camera, 0.16f);
+	//		auto Cam = camTest->GetComponent<CameraControllerComponent>();
+	//		Cam->Update(0.16f);
 
-			drawFrame();
-		}
+	//		drawFrame();
+	//	}
 
-		device.waitIdle();
-	}
+	//	device.waitIdle();
+	//}
 
 	void cleanupSwapChain()
 	{
@@ -185,25 +184,25 @@ public:
 		swapChain = nullptr;
 	}
 
-	void cleanup()
-	{
-		window->cleanup();
-	}
+	//void cleanup()
+	//{
+	//	window->cleanup();
+	//}
 
-	void recreateSwapChain()
+	void recreateSwapChain(int& width, int& height)
 	{
-		int width = 0, height = 0;
+		/*int width = 0, height = 0;
 		window->GetFramebufferSize(width, height);
 		while (width == 0 || height == 0)
 		{
 			window->GetFramebufferSize(width, height);
 			window->WaitEvents();
-		}
+		}*/
 
 		device.waitIdle();
 
 		cleanupSwapChain();
-		createSwapChain();
+		createSwapChain(width, height);
 		createImageViews();
 	}
 
@@ -270,10 +269,10 @@ public:
 		debugMessenger = instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);
 	}
 
-	void createSurface()
+	void createSurface(GLFWwindow* glfwWindow)
 	{
 		VkSurfaceKHR _surface;
-		if (glfwCreateWindowSurface(*instance, window->getGLFWWindow(), nullptr, &_surface) != 0)
+		if (glfwCreateWindowSurface(*instance, glfwWindow, nullptr, &_surface) != 0)
 		{
 			throw std::runtime_error("failed to create window surface!");
 		}
@@ -361,10 +360,11 @@ public:
 		queue = vk::raii::Queue(device, queueIndex, 0);
 	}
 
-	void createSwapChain()
+
+	void createSwapChain(int& width, int& height)
 	{
 		auto surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);
-		swapChainExtent = chooseSwapExtent(surfaceCapabilities);
+		swapChainExtent = chooseSwapExtent(surfaceCapabilities, width, height);
 		swapChainSurfaceFormat = chooseSwapSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(*surface));
 		vk::SwapchainCreateInfoKHR swapChainCreateInfo{ .surface = *surface,
 													   .minImageCount = chooseSwapMinImageCount(surfaceCapabilities),
@@ -725,7 +725,7 @@ public:
 		memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 	}
 
-	void drawFrame()
+	void drawFrame(int& width, int& height)
 	{
 		// Note: inFlightFences, presentCompleteSemaphores, and commandBuffers are indexed by frameIndex,
 		//       while renderFinishedSemaphores is indexed by imageIndex
@@ -741,7 +741,7 @@ public:
 		// here and does not need to be caught by an exception.
 		if (result == vk::Result::eErrorOutOfDateKHR)
 		{
-			recreateSwapChain();
+			recreateSwapChain(width, height);
 			return;
 		}
 		// On other success codes than eSuccess and eSuboptimalKHR we just throw an exception.
@@ -780,7 +780,7 @@ public:
 		if ((result == vk::Result::eSuboptimalKHR) || (result == vk::Result::eErrorOutOfDateKHR) || framebufferResized)
 		{
 			framebufferResized = false;
-			recreateSwapChain();
+			recreateSwapChain(width, height);
 		}
 		else
 		{
@@ -826,15 +826,12 @@ public:
 			vk::PresentModeKHR::eFifo;
 	}
 
-	vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities)
+	vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities, int& width, int& height)
 	{
 		if (capabilities.currentExtent.width != 0xFFFFFFFF)
 		{
 			return capabilities.currentExtent;
 		}
-		int width, height;
-
-		window->GetFramebufferSize(width, height);
 
 		return {
 			std::clamp<uint32_t>(width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),

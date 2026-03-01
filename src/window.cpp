@@ -69,3 +69,18 @@ void Window::setScrollCallback(GLFWscrollfun callback)
 {
 	glfwSetCursorPosCallback(m_window, callback);
 }
+
+//vk::Extent2D Window::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities)
+//{
+//	if (capabilities.currentExtent.width != 0xFFFFFFFF)
+//	{
+//		return capabilities.currentExtent;
+//	}
+//	int width, height;
+//
+//	GetFramebufferSize(width, height);
+//
+//	return {
+//		std::clamp<uint32_t>(width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
+//		std::clamp<uint32_t>(height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height) };
+//}
