@@ -149,20 +149,21 @@
     <ClCompile Include="src\window.cpp" />
   </ItemGroup>
   <ItemGroup>
-  <ClInclude Include="include\BaseComponent.h" />
-  <ClInclude Include="include\camera.h" />
-  <ClInclude Include="include\Component.h" />
-  <ClInclude Include="include\Controler.h" />
-  <ClInclude Include="include\Entity.h" />
-  <ClInclude Include="include\Event.h" />
-  <ClInclude Include="include\EventBus.h" />
-  <ClInclude Include="include\EventListener.h" />
-  <ClInclude Include="include\input.h" />
-  <ClInclude Include="include\mesh.h" />
-  <ClInclude Include="include\UIEvent.h" />
-  <ClInclude Include="include\vulkan.h" />
-  <ClInclude Include="include\window.h" />
-</ItemGroup>
+    <ClInclude Include="include\BaseComponent.h" />
+    <ClInclude Include="include\camera.h" />
+    <ClInclude Include="include\Component.h" />
+    <ClInclude Include="include\Controler.h" />
+    <ClInclude Include="include\Entity.h" />
+    <ClInclude Include="include\Event.h" />
+    <ClInclude Include="include\EventBus.h" />
+    <ClInclude Include="include\EventListener.h" />
+    <ClInclude Include="include\input.h" />
+    <ClInclude Include="include\mesh.h" />
+    <ClInclude Include="include\Renderer.h" />
+    <ClInclude Include="include\UIEvent.h" />
+    <ClInclude Include="include\vulkan.h" />
+    <ClInclude Include="include\window.h" />
+  </ItemGroup>
   <ItemGroup>
     <SlangCompileTask Include="shaders\shader.slang">
       <Entrypoints>vertMain;fragMain</Entrypoints>
