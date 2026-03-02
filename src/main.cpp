@@ -3,6 +3,34 @@
 #include "window.h"
 #include "InputManager.h"
 
+void launchVulkan( HelloTriangleApplication& app, Window* window, int width, int height )
+{
+	Mesh monkey;
+	monkey.LoadModel("../shaders/monkey.obj");
+
+	Mesh cube;
+	cube.LoadModel("../shaders/box.obj");
+
+	app.createInstance();
+	app.setupDebugMessenger();
+	app.createSurface(window->getGLFWWindow());
+	app.pickPhysicalDevice();
+	app.createLogicalDevice();
+	app.createSwapChain(width, height);
+	app.createImageViews();
+	app.createDescriptorSetLayout();
+	app.createGraphicsPipeline();
+	app.createTextureImage();
+	app.createCommandPool();
+	app.Vulkan(monkey.GetVertices(), monkey.GetIndices());
+	app.Vulkan(cube.GetVertices(), cube.GetIndices());
+	app.createUniformBuffers();
+	app.createDescriptorPool();
+	app.createDescriptorSets();
+	app.createCommandBuffers();
+	app.createSyncObjects();
+}
+
 int main()
 {
 	try
@@ -10,12 +38,6 @@ int main()
 		Window window;
 		HelloTriangleApplication app;
 		InputMapper inputManager;
-
-		Mesh monkey;
-		monkey.LoadModel("../shaders/monkey.obj");
-
-		Mesh cube;
-		cube.LoadModel("../shaders/box.obj");
 
 		Entity* camera = new Entity("mainCamera");
 		auto transform = camera->AddComponent<TransformComponent>();
@@ -33,24 +55,7 @@ int main()
 
 		int width = 1920, height = 1080;
 
-		app.createInstance();
-		app.setupDebugMessenger();
-		app.createSurface(window.getGLFWWindow());
-		app.pickPhysicalDevice();
-		app.createLogicalDevice();
-		app.createSwapChain(width, height);
-		app.createImageViews();
-		app.createDescriptorSetLayout();
-		app.createGraphicsPipeline();
-		app.createTextureImage();
-		app.createCommandPool();
-		app.Vulkan(monkey.GetVertices(), monkey.GetIndices());
-		app.Vulkan(cube.GetVertices(), cube.GetIndices());
-		app.createUniformBuffers();
-		app.createDescriptorPool();
-		app.createDescriptorSets();
-		app.createCommandBuffers();
-		app.createSyncObjects();
+		launchVulkan(app, &window, width, height);
 		app.camTest = camera;
 		//app.camera->setupInputCallbacks();
 		//app.mainLoop();
