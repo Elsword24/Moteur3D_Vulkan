@@ -158,8 +158,11 @@
   <ClInclude Include="include\EventBus.h" />
   <ClInclude Include="include\EventListener.h" />
   <ClInclude Include="include\input.h" />
+  <ClInclude Include="include\InputManager.h" />
   <ClInclude Include="include\mesh.h" />
+  <ClInclude Include="include\ModelComponent.h" />
   <ClInclude Include="include\UIEvent.h" />
+  <ClInclude Include="include\vertex.h" />
   <ClInclude Include="include\vulkan.h" />
   <ClInclude Include="include\window.h" />
 </ItemGroup>

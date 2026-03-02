@@ -86,9 +86,9 @@ public:
 		{
 			auto& event = *currentEvents.front();
 
-			for (auto info : listeners)
+			for (auto listener : listeners)
 			{
-				info.listener->OnEvent(event);
+				listener->OnEvent(event);
 			}
 
 			currentEvents.pop();
