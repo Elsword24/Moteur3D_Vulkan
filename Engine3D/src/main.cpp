@@ -6,10 +6,10 @@
 void launchVulkan( HelloTriangleApplication& app, Window* window, int width, int height )
 {
 	Mesh monkey;
-	monkey.LoadModel("../shaders/monkey.obj");
+	monkey.LoadModel("shaders/monkey.obj");
 
 	Mesh cube;
-	cube.LoadModel("../shaders/box.obj");
+	cube.LoadModel("shaders/box.obj");
 
 	app.createInstance();
 	app.setupDebugMessenger();
