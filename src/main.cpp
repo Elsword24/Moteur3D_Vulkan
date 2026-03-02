@@ -43,6 +43,7 @@ int main()
 		auto transform = camera->AddComponent<TransformComponent>();
 		camera->AddComponent<CameraComponent>();
 		camera->AddComponent<CameraControllerComponent>();
+		camera->AddComponent<InputComponent>();
 
 		transform->SetPosition(glm::vec3(1, 1, 1));
 		
@@ -63,7 +64,7 @@ int main()
 		{
 			inputManager.Update();
 			//camera->processInput(*window, *camera, 0.16f);
-			auto Cam = app.camTest->GetComponent<CameraControllerComponent>();
+			auto Cam = app.camTest->GetComponent<InputComponent>();
 			Cam->Update(0.16f);
 
 			int width = 0, height = 0;

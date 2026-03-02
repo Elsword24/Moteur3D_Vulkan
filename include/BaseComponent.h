@@ -139,40 +139,9 @@ public:
 class CameraControllerComponent : public Component
 {
 public:
-	float speed = 2.0f;
 	void Update(float dt) override
 	{
-		auto transform = GetOwner()->GetComponent<TransformComponent> ();
-
-		if (!transform)
-		{
-			return;
-		}
-
-		glm::vec3 position = transform->GetPosition();
-		glm::quat rotation = transform->GetRotation();
-		glm::vec3 forward = rotation * glm::vec3(0,0,-1);
-		glm::vec3 right = rotation * glm::vec3(1, 0, 0);
-
-		if (input::keyPressed(input::KEY::KEY_Z))
-		{
-			position += forward * speed * dt;
-		}
-		if (input::keyPressed(input::KEY::KEY_S))
-		{
-			position -= forward * speed * dt;
-		}
-		if (input::keyPressed(input::KEY::KEY_Q))
-		{
-			position += right * speed * dt;
-		}
-		if (input::keyPressed(input::KEY::KEY_D))
-		{
-			position -= right * speed * dt;
-		}
-		transform->SetPosition(position);
-	}
-
+	};
 };
 
 class LightComponent : public Component
@@ -211,6 +180,7 @@ public:
 	}
 
 };
+
 class RigidBodyComponent : public Component
 {
 	//physics parameters
@@ -230,11 +200,48 @@ class SoundListener : public SoundComponent //This could also be something in ca
 class InputComponent : public Component //based on Valentine code
 {
 	//input parameters
+public:
+	void Update(float dt) override
+	{
+		float speed = 2.0f;
+
+		auto transform = GetOwner()->GetComponent<TransformComponent>();
+
+		if (!transform)
+		{
+			return;
+		}
+
+		glm::vec3 position = transform->GetPosition();
+		glm::quat rotation = transform->GetRotation();
+		glm::vec3 forward = rotation * glm::vec3(0, 0, -1);
+		glm::vec3 right = rotation * glm::vec3(1, 0, 0);
+
+		if (input::keyPressed(input::KEY::KEY_Z))
+		{
+			position += forward * speed * dt;
+		}
+		if (input::keyPressed(input::KEY::KEY_S))
+		{
+			position -= forward * speed * dt;
+		}
+		if (input::keyPressed(input::KEY::KEY_Q))
+		{
+			position -= right * speed * dt;
+		}
+		if (input::keyPressed(input::KEY::KEY_D))
+		{
+			position += right * speed * dt;
+		}
+		transform->SetPosition(position);
+	}
 };
 
 class CanvasComponent : public Component //UI box
 {
 	//UI parameters
 };
+
+
 //Maybe do another family of component for the colliders components, like BoxColliderComponent, SphereColliderComponent, etc. that would be used by the physics system to detect collisions and trigger events.
 
