@@ -129,11 +129,6 @@ public:
 			auto& im = InputMapper::GetInstance();
 			if (key < 0 || key > GLFW_KEY_LAST) return;
 
-			if (action == GLFW_PRESS) {
-				const char* name = glfwGetKeyName(key, scancode);
-				printf("[KeyDown] key=%d scancode=%d name=%s\n", key, scancode, name ? name : "null");
-			}
-
 			if (action == GLFW_PRESS || action == GLFW_REPEAT) im.m_keysDown[(size_t)key] = 1;
 			else if (action == GLFW_RELEASE)                   im.m_keysDown[(size_t)key] = 0;
 			});

@@ -1,15 +1,14 @@
 #include "Renderer.h"
 #include "BaseComponent.h"
 #include "window.h"
-#include "InputManager.h"
 
 void launchVulkan( HelloTriangleApplication& app, Window* window, int width, int height )
 {
 	Mesh monkey;
-	monkey.LoadModel("shaders/monkey.obj");
+	monkey.LoadModel("./Assets/monkey.obj");
 
 	Mesh cube;
-	cube.LoadModel("shaders/box.obj");
+	cube.LoadModel("./Assets/box.obj");
 
 	app.createInstance();
 	app.setupDebugMessenger();
@@ -37,20 +36,23 @@ int main()
 	{
 		Window window;
 		HelloTriangleApplication app;
-		InputMapper inputManager;
 
 		Entity* camera = new Entity("mainCamera");
 		auto transform = camera->AddComponent<TransformComponent>();
 		camera->AddComponent<CameraComponent>();
 		camera->AddComponent<CameraControllerComponent>();
 		camera->AddComponent<InputComponent>();
+		camera->AddComponent<MouseComponent>();
 
-		transform->SetPosition(glm::vec3(1, 1, 1));
+		transform->SetPosition(glm::vec3(-1, 1, 10));
 		
 		//app.initWindow();
 
 		window.initWindow();
-		input::init(window.getGLFWWindow());
+		glfwSetInputMode(window.getGLFWWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		auto& inputManager = InputMapper::GetInstance();
+		inputManager.Init(window.getGLFWWindow());
+
 		app.sceneObjects.push_back(std::make_pair(0, glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, -2.0f))));
 		app.sceneObjects.push_back(std::make_pair(1, glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f))));
 
@@ -62,10 +64,18 @@ int main()
 		//app.mainLoop();
 		while (!window.WindowClosed())
 		{
+			window.PollEvent();
+
 			inputManager.Update();
 			//camera->processInput(*window, *camera, 0.16f);
-			auto Cam = app.camTest->GetComponent<InputComponent>();
-			Cam->Update(0.16f);
+
+			// Keyboard input is handled in the InputComponent, so we update it here
+			//auto Cam = app.camTest->GetComponent<InputComponent>();
+			//Cam->Update(0.16f);
+
+			//Mouse input is handled in the MouseComponent, so we update it here
+			auto MouseInputs = app.camTest->GetComponent<MouseComponent>();
+			MouseInputs->Update(0.16f);
 
 			int width = 0, height = 0;
 			window.GetFramebufferSize(width, height);
@@ -76,6 +86,7 @@ int main()
 			}
 
 			app.drawFrame(width, height);
+
 		}
 
 		app.device.waitIdle();
