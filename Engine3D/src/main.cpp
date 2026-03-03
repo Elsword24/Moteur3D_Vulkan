@@ -19,7 +19,7 @@ void launchVulkan( HelloTriangleApplication& app, Window* window, int width, int
 	app.createImageViews();
 	app.createDescriptorSetLayout();
 	app.createGraphicsPipeline();
-	app.createTextureImage();
+	//app.createTextureImage();
 	app.createCommandPool();
 	app.Vulkan(monkey.GetVertices(), monkey.GetIndices());
 	app.Vulkan(cube.GetVertices(), cube.GetIndices());
@@ -40,13 +40,10 @@ int main()
 		Entity* camera = new Entity("mainCamera");
 		auto transform = camera->AddComponent<TransformComponent>();
 		camera->AddComponent<CameraComponent>();
-		camera->AddComponent<CameraControllerComponent>();
 		camera->AddComponent<InputComponent>();
 		camera->AddComponent<MouseComponent>();
 
 		transform->SetPosition(glm::vec3(-1, 1, 10));
-		
-		//app.initWindow();
 
 		window.initWindow();
 		glfwSetInputMode(window.getGLFWWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -60,14 +57,11 @@ int main()
 
 		launchVulkan(app, &window, width, height);
 		app.camTest = camera;
-		//app.camera->setupInputCallbacks();
-		//app.mainLoop();
 		while (!window.WindowClosed())
 		{
 			window.PollEvent();
 
 			inputManager.Update();
-			//camera->processInput(*window, *camera, 0.16f);
 
 			// Keyboard input is handled in the InputComponent, so we update it here
 			//auto Cam = app.camTest->GetComponent<InputComponent>();
@@ -90,7 +84,6 @@ int main()
 		}
 
 		app.device.waitIdle();
-		//app.cleanup();
 		window.cleanup();
 	}
 	catch (const std::exception& e)

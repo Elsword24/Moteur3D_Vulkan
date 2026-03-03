@@ -1,13 +1,14 @@
 #pragma once
+
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
 #include <algorithm>
 #include <array>
 #include <assert.h>
-#include <cstdlib>
-#include <cstring>
 #include <fstream>
 #include <filesystem>
 #include <iostream>
-#include <limits>
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -144,39 +145,10 @@ public:
 		} };
 	}
 
-public:
-
 	bool framebufferResized = false;
 
 	std::vector<const char*> requiredDeviceExtension = {
 		vk::KHRSwapchainExtensionName };
-
-	//void initWindow()
-	//{
-	//	window->initWindow();
-	//}
-
-	/*static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
-	{
-		auto app = static_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
-		app->framebufferResized = true;
-	}*/
-
-
-	//void mainLoop()
-	//{
-	//	while (!window->WindowClosed())
-	//	{
-	//		window->PollEvent();
-	//		//camera->processInput(*window, *camera, 0.16f);
-	//		auto Cam = camTest->GetComponent<CameraControllerComponent>();
-	//		Cam->Update(0.16f);
-
-	//		drawFrame();
-	//	}
-
-	//	device.waitIdle();
-	//}
 
 	void cleanupSwapChain()
 	{
@@ -184,20 +156,8 @@ public:
 		swapChain = nullptr;
 	}
 
-	//void cleanup()
-	//{
-	//	window->cleanup();
-	//}
-
 	void recreateSwapChain(int& width, int& height)
 	{
-		/*int width = 0, height = 0;
-		window->GetFramebufferSize(width, height);
-		while (width == 0 || height == 0)
-		{
-			window->GetFramebufferSize(width, height);
-			window->WaitEvents();
-		}*/
 
 		device.waitIdle();
 
@@ -272,7 +232,7 @@ public:
 	void createSurface(GLFWwindow* glfwWindow)
 	{
 		VkSurfaceKHR _surface;
-		if (glfwCreateWindowSurface(*instance, glfwWindow, nullptr, &_surface) != 0)
+		if (glfwCreateWindowSurface(*instance, glfwWindow, nullptr, &_surface) != 0) 
 		{
 			throw std::runtime_error("failed to create window surface!");
 		}
@@ -453,10 +413,11 @@ public:
 		graphicsPipeline = vk::raii::Pipeline(device, nullptr, pipelineCreateInfoChain.get<vk::GraphicsPipelineCreateInfo>());
 	}
 
-	void createTextureImage()
+	//Function to implement to add textures
+	/*void createTextureImage()
 	{
 
-	}
+	}*/
 
 	void createCommandPool()
 	{
@@ -608,7 +569,7 @@ public:
 			.pColorAttachments = &attachmentInfo };
 		commandBuffer.beginRendering(renderingInfo);
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *graphicsPipeline);
-		////// faire les push constant apres bindpipeline
+		// faire les push constant apres bindpipeline
 		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapChainExtent.width), static_cast<float>(swapChainExtent.height), 0.0f, 1.0f));
 		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapChainExtent));
 

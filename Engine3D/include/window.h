@@ -28,16 +28,6 @@ public:
 	void* getUserPointer() const;
 	void setMouseCallback(GLFWcursorposfun callback);
 	void setScrollCallback(GLFWscrollfun callback);
-	//vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
-	//void createSurface()
-	//{
-	//	VkSurfaceKHR _surface;
-	//	if (glfwCreateWindowSurface(*instance, m_window, nullptr, &_surface) != 0)
-	//	{
-	//		throw std::runtime_error("failed to create window surface!");
-	//	}
-	//	surface = vk::raii::SurfaceKHR(instance, _surface);
-	//}
 
 private:
 	GLFWwindow* m_window = nullptr;

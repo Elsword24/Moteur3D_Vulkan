@@ -3,8 +3,6 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-
-
 namespace input
 {
 	inline GLFWwindow* m_window = nullptr;
@@ -13,7 +11,8 @@ namespace input
 	{
 		m_window = window;
 	}
-
+	//The Enum list all keys and mouse buttons that we want to handle in our engine,
+	//you can add more keys if you want but try to keep it simple and not too much keys
 	enum class KEY
 	{
 		KEY_A, KEY_B, KEY_C, KEY_D,
@@ -37,14 +36,15 @@ namespace input
 		KEY_CTRL
 	};
 
-	
-
 	enum inputState
 	{
 		PRESSED = GLFW_PRESS,
 		RELEASED = GLFW_RELEASE,
 		REPEAT = GLFW_REPEAT
 	};
+
+	//This switch list all the keys and mouse buttons that we want to handle in our engine and return the corresponding GLFW code for each key or mouse button
+	//Since GLFW is QWERTY based we need to invert some keys to have a correct mapping for AZERTY keyboard
 
 	inline int Key(KEY key)
 	{

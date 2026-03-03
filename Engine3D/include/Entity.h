@@ -1,11 +1,11 @@
 #pragma once
+
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 #include <type_traits>
 #include <utility>
-
 #include "Component.h"
 
 class Entity
@@ -23,6 +23,7 @@ public:
     bool isActive() const { return active; }
     void setActive(bool isActive_) { active = isActive_; }
 
+    //This template can add a Component to an entity based on component name
     template<typename T, typename... Args>
     T* AddComponent(Args&&... args)
     {
@@ -43,7 +44,8 @@ public:
         components.push_back(std::move(component));
         return componentPtr;
     }
-
+    
+	//this template can get a Component from an entity based on component name
     template<typename T>
     T* GetComponent()
     {
@@ -54,6 +56,7 @@ public:
         return nullptr;
     }
 
+	//This template can remove a Component from an entity based on component name
     template <typename T>
     bool RemoveComponent()
     {

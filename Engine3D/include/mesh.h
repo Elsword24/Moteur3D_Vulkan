@@ -2,7 +2,6 @@
 #include <rapidobj.hpp>
 #include "vertex.h"
 
-
 //struct MeshData
 //{
 //	std::vector<Vertex>   m_vertices;

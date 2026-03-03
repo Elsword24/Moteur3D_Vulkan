@@ -5,7 +5,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include "Entity.h"
-#include "input.h"
 #include "InputMapper.h"
 
 class TransformComponent : public Component
@@ -137,17 +136,9 @@ public:
 	}
 };
 
-class CameraControllerComponent : public Component
-{
-public:
-	void Update(float dt) override
-	{
-	};
-};
-
 class LightComponent : public Component
 {
-	//entité scénique // rendering
+	//entite scenique // rendering
 	// couleur intensité, radius etc // tri pour savoir ce qu'elle doit faire
 private:
 
@@ -241,7 +232,3 @@ class CanvasComponent : public Component //UI box
 {
 	//UI parameters
 };
-
-
-//Maybe do another family of component for the colliders components, like BoxColliderComponent, SphereColliderComponent, etc. that would be used by the physics system to detect collisions and trigger events.
-
