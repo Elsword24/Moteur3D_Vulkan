@@ -67,7 +67,7 @@ void Window::setMouseCallback(GLFWcursorposfun callback)
 
 void Window::setScrollCallback(GLFWscrollfun callback)
 {
-	glfwSetCursorPosCallback(m_window, callback);
+	glfwSetScrollCallback(m_window, callback);
 }
 
 

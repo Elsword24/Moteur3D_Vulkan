@@ -6,6 +6,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include "Entity.h"
 #include "input.h"
+#include "InputMapper.h"
 
 class TransformComponent : public Component
 {
@@ -197,43 +198,42 @@ class SoundListener : public SoundComponent //This could also be something in ca
 	//listener parameters
 };
 
-class InputComponent : public Component //based on Valentine code
-{
-	//input parameters
+class InputComponent : public Component {
+
 public:
-	void Update(float dt) override
-	{
+
+	void Update(float dt) override {
 		float speed = 2.0f;
-
 		auto transform = GetOwner()->GetComponent<TransformComponent>();
-
-		if (!transform)
-		{
-			return;
-		}
+		if (!transform) return;
 
 		glm::vec3 position = transform->GetPosition();
 		glm::quat rotation = transform->GetRotation();
-		glm::vec3 forward = rotation * glm::vec3(0, 0, -1);
-		glm::vec3 right = rotation * glm::vec3(1, 0, 0);
 
-		if (input::keyPressed(input::KEY::KEY_Z))
-		{
-			position += forward * speed * dt;
-		}
-		if (input::keyPressed(input::KEY::KEY_S))
-		{
-			position -= forward * speed * dt;
-		}
-		if (input::keyPressed(input::KEY::KEY_Q))
-		{
-			position -= right * speed * dt;
-		}
-		if (input::keyPressed(input::KEY::KEY_D))
-		{
-			position += right * speed * dt;
-		}
+		// Get input values
+		float horizontal = InputMapper::GetInstance().GetAxis("Horizontal");
+		float vertical = InputMapper::GetInstance().GetAxis("Vertical");
+		float forward = InputMapper::GetInstance().GetAxis("Forward");
+
+		// Calculate movement
+		glm::vec3 moveDirection =
+			(rotation * glm::vec3(1.0f, 0.0f, 0.0f)) * horizontal +
+			(rotation * glm::vec3(0.0f, 1.0f, 0.0f)) * vertical +
+			(rotation * glm::vec3(0.0f, 0.0f, -1.0f)) * forward;
+
+		position += moveDirection * speed * dt;
 		transform->SetPosition(position);
+	}
+};
+
+class MouseComponent : public Component {
+	//mouse parameters
+public:
+	void Update(float deltatime) override
+	{
+		if (InputMapper::GetInstance().isButtonPressed("Shoot")) {
+			std::printf("CLICK LEFT (Shoot)\n");
+		}
 	}
 };
 
