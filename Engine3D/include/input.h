@@ -30,7 +30,11 @@ namespace input
 		KEY_RIGHT_SHIFT,
 		UNKNOWN,
 		MOUSE_LEFT,
-		MOUSE_RIGHT
+		MOUSE_RIGHT,
+		MOUSE_MIDDLE,
+		MOUSE_BUTTON_4,
+		MOUSE_BUTTON_5,
+		KEY_CTRL
 	};
 
 	
@@ -85,19 +89,39 @@ namespace input
 		case KEY::KEY_SPACE:       return GLFW_KEY_SPACE;
 		case KEY::KEY_LEFT_SHIFT:  return GLFW_KEY_LEFT_SHIFT;
 		case KEY::KEY_RIGHT_SHIFT: return GLFW_KEY_RIGHT_SHIFT;
+		case KEY::MOUSE_LEFT:      return GLFW_MOUSE_BUTTON_LEFT;
+		case KEY::MOUSE_RIGHT:     return GLFW_MOUSE_BUTTON_RIGHT;
+		case KEY::MOUSE_MIDDLE:    return GLFW_MOUSE_BUTTON_MIDDLE;
+		case KEY::MOUSE_BUTTON_4:  return GLFW_MOUSE_BUTTON_4;
+		case KEY::MOUSE_BUTTON_5:  return GLFW_MOUSE_BUTTON_5;
+		case KEY::KEY_CTRL: return GLFW_KEY_LEFT_CONTROL;
 		default:
-			return false;
-			break;
+			return GLFW_KEY_UNKNOWN;
 		}
+	}
+
+	inline bool isMouseKey(KEY key)
+	{
+		return key == KEY::MOUSE_LEFT
+			|| key == KEY::MOUSE_RIGHT
+			|| key == KEY::MOUSE_MIDDLE
+			|| key == KEY::MOUSE_BUTTON_4
+			|| key == KEY::MOUSE_BUTTON_5;
 	}
 
 	inline bool keyPressed(KEY key)
 	{
-		if (!m_window)
-		{
-			return false;
-		}
-		return glfwGetKey(m_window, Key(key)) == GLFW_PRESS;
+		if (!m_window) return false;
+		if (key == KEY::UNKNOWN) return false;
+
+		int code = Key(key);
+		if (code == GLFW_KEY_UNKNOWN) return false;
+
+		if (isMouseKey(key))
+			return glfwGetMouseButton(m_window, code) == GLFW_PRESS;
+
+		return glfwGetKey(m_window, code) == GLFW_PRESS;
 	}
+
 
 }

@@ -158,7 +158,7 @@
   <ClInclude Include="include\EventBus.h" />
   <ClInclude Include="include\EventListener.h" />
   <ClInclude Include="include\input.h" />
-  <ClInclude Include="include\InputManager.h" />
+  <ClInclude Include="include\InputMapper.h" />
   <ClInclude Include="include\mesh.h" />
   <ClInclude Include="include\ModelComponent.h" />
   <ClInclude Include="include\Renderer.h" />

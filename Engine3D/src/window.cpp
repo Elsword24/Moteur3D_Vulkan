@@ -8,7 +8,7 @@ void Window::initWindow(uint32_t WIDTH, uint32_t HEIGHT)
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-	m_window = glfwCreateWindow(WIDTH, HEIGHT, "RailShooter", nullptr, nullptr);
+	m_window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
 	glfwSetWindowUserPointer(m_window, this);
 }
 
@@ -67,7 +67,7 @@ void Window::setMouseCallback(GLFWcursorposfun callback)
 
 void Window::setScrollCallback(GLFWscrollfun callback)
 {
-	glfwSetCursorPosCallback(m_window, callback);
+	glfwSetScrollCallback(m_window, callback);
 }
 
 
