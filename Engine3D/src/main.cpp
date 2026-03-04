@@ -2,6 +2,9 @@
 #include "BaseComponent.h"
 #include "window.h"
 
+constexpr uint32_t WIDTH = 800;
+constexpr uint32_t HEIGHT = 600;
+
 void launchVulkan( HelloTriangleApplication& app, Window* window, int width, int height )
 {
 	Mesh monkey;
@@ -34,7 +37,7 @@ int main()
 {
 	try
 	{
-		Window window;
+		Window window(WIDTH, HEIGHT);
 		HelloTriangleApplication app;
 
 		Entity* camera = new Entity("mainCamera");
@@ -44,8 +47,10 @@ int main()
 		camera->AddComponent<MouseComponent>();
 
 		transform->SetPosition(glm::vec3(-1, 1, 10));
+		
+		//app.initWindow();
 
-		window.initWindow();
+		//window.initWindow();
 		glfwSetInputMode(window.getGLFWWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		auto& inputManager = InputMapper::GetInstance();
 		inputManager.Init(window.getGLFWWindow());
@@ -53,6 +58,7 @@ int main()
 		app.sceneObjects.push_back(std::make_pair(0, glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, -2.0f))));
 		app.sceneObjects.push_back(std::make_pair(1, glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f))));
 
+		//TODO : a enlever
 		int width = 1920, height = 1080;
 
 		launchVulkan(app, &window, width, height);
@@ -62,6 +68,7 @@ int main()
 			window.PollEvent();
 
 			inputManager.Update();
+			//camera->processInput(*window, *camera, 0.16f);
 
 			// Keyboard input is handled in the InputComponent, so we update it here
 			//auto Cam = app.camTest->GetComponent<InputComponent>();

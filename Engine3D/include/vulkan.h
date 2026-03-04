@@ -357,14 +357,14 @@ public:
 
 	void createDescriptorSetLayout()
 	{
-		vk::DescriptorSetLayoutBinding    uboLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr);
+		vk::DescriptorSetLayoutBinding    uboLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex |vk::ShaderStageFlagBits::eFragment, nullptr);
 		vk::DescriptorSetLayoutCreateInfo layoutInfo{ .bindingCount = 1, .pBindings = &uboLayoutBinding };
 		descriptorSetLayout = vk::raii::DescriptorSetLayout(device, layoutInfo);
 	}
 
 	void createGraphicsPipeline()
 	{
-		vk::raii::ShaderModule shaderModule = createShaderModule(readFile("shaders/slang.spv"));
+		vk::raii::ShaderModule shaderModule = createShaderModule(readFile("shaders/shader.slang.spv"));
 
 		vk::PipelineShaderStageCreateInfo vertShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eVertex, .module = shaderModule, .pName = "vertMain" };
 		vk::PipelineShaderStageCreateInfo fragShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eFragment, .module = shaderModule, .pName = "fragMain" };
@@ -683,6 +683,10 @@ public:
 
 		ubo.proj[1][1] *= -1;
 
+		ubo.light.posWorld = { 0.0f,2.0f,0.0f };
+		ubo.light.color = { 1.0f,0.0f,0.0f };
+		ubo.light.intensity = 1.0f;
+
 		memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 	}
 
@@ -836,4 +840,5 @@ public:
 		file.close();
 		return buffer;
 	}
+
 };

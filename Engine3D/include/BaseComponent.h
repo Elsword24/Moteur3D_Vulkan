@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include "Entity.h"
+#include "input.h"
 #include "InputMapper.h"
 
 class TransformComponent : public Component
@@ -136,42 +137,50 @@ public:
 	}
 };
 
-class LightComponent : public Component
+class CameraControllerComponent : public Component
 {
-	//entite scenique // rendering
-	// couleur intensité, radius etc // tri pour savoir ce qu'elle doit faire
-private:
-
-	enum Type
-	{
-		directional,
-		point,
-		spot,
-		Ambient //skybox light
-	};
-	Type lightType = Type::Ambient;
-	glm::vec3 lightColor; //RGB
-	float lightIntensity = 100.0f;
-	float lightRadius = 50.0f;
-
 public:
-	void setLight(Type type, glm::vec3 color, const float intensity, const float radius)
+	void Update(float dt) override
 	{
-		//Create good class based on type ?
-		switch (type)
-		{
-		case Type::directional:
-			break;
-		case Type::spot:
-			break;
-		case Type::point:
-			break;
-		default:
-			break;
-		}
-	}
-
+	};
 };
+
+//class LightComponent : public Component
+//{
+//	//entitï¿½ scï¿½nique // rendering
+//	// couleur intensitï¿½, radius etc // tri pour savoir ce qu'elle doit faire
+//private:
+//
+//	enum Type
+//	{
+//		directional,
+//		point,
+//		spot,
+//		Ambient //skybox light
+//	};
+//	Type lightType = Type::Ambient;
+//	glm::vec3 lightColor; //RGB
+//	float lightIntensity = 100.0f;
+//	float lightRadius = 50.0f;
+//
+//public:
+//	void setLight(Type type, glm::vec3 color, const float intensity, const float radius)
+//	{
+//		//Create good class based on type ?
+//		switch (type)
+//		{
+//		case Type::directional:
+//			break;
+//		case Type::spot:
+//			break;
+//		case Type::point:
+//			break;
+//		default:
+//			break;
+//		}
+//	}
+//
+//};
 
 class RigidBodyComponent : public Component
 {

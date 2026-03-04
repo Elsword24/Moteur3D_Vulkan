@@ -9,6 +9,7 @@
 class Renderer
 {
 public:
-
+	Renderer();
+	~Renderer() = default;
 private:
 };

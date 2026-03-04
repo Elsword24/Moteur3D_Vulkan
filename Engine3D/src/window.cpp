@@ -1,11 +1,12 @@
 #include "window.h"
 
-void Window::initWindow()
+
+void Window::initWindow(uint32_t WIDTH, uint32_t HEIGHT)
 {
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 	m_window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
 	glfwSetWindowUserPointer(m_window, this);
@@ -68,3 +69,19 @@ void Window::setScrollCallback(GLFWscrollfun callback)
 {
 	glfwSetScrollCallback(m_window, callback);
 }
+
+
+//vk::Extent2D Window::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities)
+//{
+//	if (capabilities.currentExtent.width != 0xFFFFFFFF)
+//	{
+//		return capabilities.currentExtent;
+//	}
+//	int width, height;
+//
+//	GetFramebufferSize(width, height);
+//
+//	return {
+//		std::clamp<uint32_t>(width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
+//		std::clamp<uint32_t>(height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height) };
+//}
