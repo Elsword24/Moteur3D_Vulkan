@@ -1,14 +1,14 @@
 #include "window.h"
 
 
-void Window::initWindow()
+void Window::initWindow(uint32_t WIDTH, uint32_t HEIGHT)
 {
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-	m_window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+	m_window = glfwCreateWindow(WIDTH, HEIGHT, "RailShooter", nullptr, nullptr);
 	glfwSetWindowUserPointer(m_window, this);
 }
 

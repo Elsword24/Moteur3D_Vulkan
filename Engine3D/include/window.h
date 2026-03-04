@@ -1,8 +1,7 @@
 #pragma once
 #include "input.h"
 
-constexpr uint32_t WIDTH = 800;
-constexpr uint32_t HEIGHT = 600;
+
 
 
 #if defined(__INTELLISENSE__) || !defined(USE_CPP20_MODULES)
@@ -14,9 +13,11 @@ import vulkan_hpp;
 class Window
 {
 public:
-	Window(){}
-
-	void initWindow();
+	Window(uint32_t WIDTH, uint32_t HEIGHT)
+	{
+		initWindow(WIDTH, HEIGHT);
+	}
+	void initWindow(uint32_t WIDTH, uint32_t HEIGHT);
 	int WindowClosed();
 	void PollEvent();
 	int GetKey(int key);

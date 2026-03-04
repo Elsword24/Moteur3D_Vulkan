@@ -146,38 +146,54 @@ public:
 
 class LightComponent : public Component
 {
+private:
+
+public:
+	LightComponent();
+	~LightComponent() = default;
+
+
+
+
+
+
+
+
+
+
+
 	//entité scénique // rendering
 	// couleur intensité, radius etc // tri pour savoir ce qu'elle doit faire
 private:
 
-	enum Type
-	{
-		directional,
-		point,
-		spot,
-		Ambient //skybox light
-	};
-	Type lightType = Type::Ambient;
-	glm::vec3 lightColor; //RGB
-	float lightIntensity = 100.0f;
-	float lightRadius = 50.0f;
+	//enum Type
+	//{
+	//	directional,
+	//	point,
+	//	spot,
+	//	Ambient //skybox light
+	//};
+	//Type lightType = Type::Ambient;
+	//glm::vec3 lightColor; //RGB
+	//float lightIntensity = 100.0f;
+	//float lightRadius = 50.0f;
 
 public:
-	void setLight(Type type, glm::vec3 color, const float intensity, const float radius)
-	{
-		//Create good class based on type ?
-		switch (type)
-		{
-		case Type::directional:
-			break;
-		case Type::spot:
-			break;
-		case Type::point:
-			break;
-		default:
-			break;
-		}
-	}
+	//void setLight(Type type, glm::vec3 color, const float intensity, const float radius)
+	//{
+	//	//Create good class based on type ?
+	//	switch (type)
+	//	{
+	//	case Type::directional:
+	//		break;
+	//	case Type::spot:
+	//		break;
+	//	case Type::point:
+	//		break;
+	//	default:
+	//		break;
+	//	}
+	//}
 
 };
 

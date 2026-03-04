@@ -3,6 +3,8 @@
 #include "window.h"
 #include "InputManager.h"
 
+constexpr uint32_t WIDTH = 800;
+constexpr uint32_t HEIGHT = 600;
 void launchVulkan( HelloTriangleApplication& app, Window* window, int width, int height )
 {
 	Mesh monkey;
@@ -35,7 +37,7 @@ int main()
 {
 	try
 	{
-		Window window;
+		Window window(WIDTH, HEIGHT);
 		HelloTriangleApplication app;
 		InputMapper inputManager;
 
@@ -49,10 +51,11 @@ int main()
 		
 		//app.initWindow();
 
-		window.initWindow();
+		//window.initWindow();
 		input::init(window.getGLFWWindow());
 		app.sceneObjects.push_back(std::make_pair(0, glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, -2.0f))));
 		app.sceneObjects.push_back(std::make_pair(1, glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f))));
+
 
 		int width = 1920, height = 1080;
 
