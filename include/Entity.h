@@ -17,7 +17,9 @@ private:
     bool active = true;
 
 public:
-    explicit Entity(std::string entityName) : name(std::move(entityName)) {}
+    explicit Entity(std::string entityName) : name(
+        
+        (entityName)) {}
 
     const std::string& GetName() const { return name; }
     bool isActive() const { return active; }

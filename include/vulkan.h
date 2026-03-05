@@ -59,14 +59,12 @@ class HelloTriangleApplication
 public:
 	HelloTriangleApplication()
 	{
-		//window = new Window();
-		//camera = std::make_unique<Camera>(window);
+
 		
 	}
 	~HelloTriangleApplication()
 	{
-		//delete window;
-		//window = nullptr;
+
 	}
 		
 
@@ -84,7 +82,6 @@ public:
 	std::vector<std::pair<uint32_t, glm::mat4>> sceneObjects;
 	
 public:
-	//Window*                          window = nullptr;
 	vk::raii::Context                context;
 	vk::raii::Instance               instance = nullptr;
 	vk::raii::DebugUtilsMessengerEXT debugMessenger = nullptr;
@@ -117,7 +114,6 @@ public:
 	std::vector<vk::raii::Semaphore> renderFinishedSemaphores;
 	std::vector<vk::raii::Fence>     inFlightFences;
 	uint32_t                         frameIndex = 0;
-	//std::unique_ptr<Camera> camera;
 	Entity* camTest = nullptr;
 
 
@@ -151,32 +147,7 @@ public:
 	std::vector<const char*> requiredDeviceExtension = {
 		vk::KHRSwapchainExtensionName };
 
-	//void initWindow()
-	//{
-	//	window->initWindow();
-	//}
-
-	/*static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
-	{
-		auto app = static_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
-		app->framebufferResized = true;
-	}*/
-
-
-	//void mainLoop()
-	//{
-	//	while (!window->WindowClosed())
-	//	{
-	//		window->PollEvent();
-	//		//camera->processInput(*window, *camera, 0.16f);
-	//		auto Cam = camTest->GetComponent<CameraControllerComponent>();
-	//		Cam->Update(0.16f);
-
-	//		drawFrame();
-	//	}
-
-	//	device.waitIdle();
-	//}
+	
 
 	void cleanupSwapChain()
 	{
@@ -184,21 +155,8 @@ public:
 		swapChain = nullptr;
 	}
 
-	//void cleanup()
-	//{
-	//	window->cleanup();
-	//}
-
 	void recreateSwapChain(int& width, int& height)
 	{
-		/*int width = 0, height = 0;
-		window->GetFramebufferSize(width, height);
-		while (width == 0 || height == 0)
-		{
-			window->GetFramebufferSize(width, height);
-			window->WaitEvents();
-		}*/
-
 		device.waitIdle();
 
 		cleanupSwapChain();
@@ -612,6 +570,8 @@ public:
 		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapChainExtent.width), static_cast<float>(swapChainExtent.height), 0.0f, 1.0f));
 		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapChainExtent));
 
+		///// faut bouger sa! c le constructeur dans Renderer
+
 		if (sceneObjects.size() <= 0)
 		{
 			std::cout << "deso c vide" << std::endl;
@@ -702,6 +662,7 @@ public:
 		}
 	}
 
+	///////// faut changer ca aussi!!
 	void updateUniformBuffer(uint32_t currentImage)
 	{
 		static auto startTime = std::chrono::high_resolution_clock::now();
@@ -711,11 +672,13 @@ public:
 
 		auto cam = camTest->GetComponent<CameraComponent>();
 		UniformBufferObject ubo{};
+		//// 
 		sceneObjects[1].second = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		float aspect = static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height);
 		cam->SetPerspective(45.0f, aspect, 0.1f, 1000.0f);
 
+		// set Camera
 		ubo.view = cam->GetViewMatrix();
 		ubo.proj = cam->GetProjectionMatrix();
 
