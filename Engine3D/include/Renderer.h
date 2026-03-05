@@ -3,9 +3,6 @@
 #include "Vulkan.h"
 #include "mesh.h"
 
-
-
-
 class Renderer
 {
 public:
