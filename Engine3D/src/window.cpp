@@ -1,14 +1,14 @@
 #include "window.h"
 
 
-void Window::initWindow(uint32_t WIDTH, uint32_t HEIGHT)
+void Window::initWindow(const char* Title, uint32_t WIDTH, uint32_t HEIGHT)
 {
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);//TODO: Resize Window a fixer 
 
-	m_window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+	m_window = glfwCreateWindow(WIDTH, HEIGHT, Title, nullptr, nullptr);
 	glfwSetWindowUserPointer(m_window, this);
 }
 
