@@ -1,11 +1,16 @@
 #pragma once
-#define GLM_ENABLE_EXPERIMENTAL
+#include "glmConfig.h"
 #include "Component.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include "Entity.h"
 #include "InputMapper.h"
+#include "window.h"
+#include "Physics.h"
+#include <glm/gtc/matrix_inverse.hpp>
+#include <glm/ext/matrix_projection.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 class TransformComponent : public Component
 {
@@ -130,9 +135,28 @@ public:
 				nearPlane,
 				farPlane
 			);
+			projectionMatrix[1][1] *= -1.0f;
 			projectionDirty = false;
 		}
 		return projectionMatrix;
+	}
+
+	static void BuildMouseRay(double mouseX, double mouseY,int screenW, int screenH,const CameraComponent& cam,const TransformComponent& camTransform,glm::vec3& outOrigin,glm::vec3& outDir)
+	{
+		float x = static_cast<float>(mouseX);
+		float y = static_cast<float>(screenH - mouseY);
+
+		glm::vec4 viewport(0.f, 0.f, static_cast<float>(screenW), static_cast<float>(screenH));
+
+		glm::mat4 view = cam.GetViewMatrix();
+		glm::mat4 proj = cam.GetProjectionMatrix();
+
+		// Vulkan depth: near = 0, far = 1
+		glm::vec3 nearP = glm::unProjectZO(glm::vec3(x, y, 0.0f), view, proj, viewport);
+		glm::vec3 farP = glm::unProjectZO(glm::vec3(x, y, 1.0f), view, proj, viewport);
+
+		outOrigin = camTransform.GetPosition();              
+		outDir = glm::normalize(farP - nearP);
 	}
 };
 
@@ -175,7 +199,19 @@ public:
 
 class RigidBodyComponent : public Component
 {
-	//physics parameters
+private:
+	std::shared_ptr<Physics::RigidBody> body = nullptr;
+public:
+	void SetRigidBody(const std::shared_ptr<Physics::RigidBody>& rb) { body = rb; }
+	std::shared_ptr<Physics::RigidBody> GetRigidBody() const { return body; }
+	void Update(float deltatime) override
+	{
+		if (!body) return;
+		auto transform = GetOwner()->GetComponent<TransformComponent>();
+		if (!transform) return;
+		transform->SetPosition(body->GetPosition());
+		transform->SetRotation(body->GetRotation());
+	}
 };
 
 class SoundComponent : public Component {};
@@ -220,11 +256,57 @@ public:
 class MouseComponent : public Component {
 	//mouse parameters
 public:
+
+	static Physics::PhysicsSystem* s_Physics;
+	static Window* s_Window;
+
+
 	void Update(float deltatime) override
 	{
-		if (InputMapper::GetInstance().isButtonPressed("Shoot")) {
-			std::printf("CLICK LEFT (Shoot)\n");
-		}
+		if (!InputMapper::GetInstance().isButtonPressed("Shoot")) return;
+		if (!s_Window || !s_Physics) return;
+
+		GLFWwindow* win = InputMapper::GetInstance().m_window;
+
+		//Mouse position in WINDOW coordinates
+		double mxWin = 0.0, myWin = 0.0;
+		glfwGetCursorPos(win, &mxWin, &myWin);
+
+		int winW = 0, winH = 0;
+		glfwGetWindowSize(win, &winW, &winH);
+
+		int fbW = 0, fbH = 0;
+		s_Window->GetFramebufferSize(fbW, fbH);
+
+		if (winW <= 0 || winH <= 0 || fbW <= 0 || fbH <= 0) return;
+
+		//Convert mouse coords -> FRAMEBUFFER coordinates
+		const double sx = static_cast<double>(fbW) / static_cast<double>(winW);
+		const double sy = (double)fbH / (double)winH;
+
+		const double mx = mxWin * sx;
+		const double my = myWin * sy;
+
+		auto cam = GetOwner()->GetComponent<CameraComponent>();
+		auto cameraTransform = GetOwner()->GetComponent<TransformComponent>();
+		if (!cam || !cameraTransform) return;
+
+		glm::vec3 origin, direction;
+		CameraComponent::BuildMouseRay(mx, my, fbW, fbH, *cam, *cameraTransform, origin, direction);
+		glm::vec3 forward = cameraTransform->GetRotation() * glm::vec3(0, 0, -1);
+		printf("forward: %f %f %f\n", forward.x, forward.y, forward.z);
+		printf("raydir : %f %f %f\n", direction.x, direction.y, direction.z);
+
+		Physics::RaycastHit hit;
+		printf("Mouse win=(%.1f %.1f) fb=(%.1f %.1f) winSize=(%d %d) fbSize=(%d %d)\n",
+			mxWin, myWin, mx, my, winW, winH, fbW, fbH);
+		printf("Ray origin: %f %f %f\n", origin.x, origin.y, origin.z);
+		printf("Ray dir: %f %f %f\n", direction.x, direction.y, direction.z);
+
+		if (s_Physics->Raycast(origin, direction, 1000.0f, hit))
+			std::printf("HIT dist=%.3f\n", hit.distance);
+		else
+			std::printf("Nothing hit\n");
 	}
 };
 

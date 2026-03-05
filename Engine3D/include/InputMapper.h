@@ -6,8 +6,6 @@
 #include <algorithm>
 #include <GLFW/glfw3.h>
 #include "input.h"
-#include <array>
-#include <cstdint>
 
 class InputMapper
 {
@@ -57,11 +55,6 @@ protected:
 	std::array<uint8_t, GLFW_MOUSE_BUTTON_LAST + 1> m_mouseDown{};
 	std::array<uint8_t, GLFW_MOUSE_BUTTON_LAST + 1> m_mousePrev{};
 
-	double m_mouseX = 0.0, m_mouseY = 0.0;
-	double m_prevMouseX = 0.0, m_prevMouseY = 0.0;
-	float  m_mouseDeltaX = 0.0f, m_mouseDeltaY = 0.0f;
-
-	GLFWwindow* m_window = nullptr;
 
 private:
 
@@ -98,6 +91,12 @@ private:
 	
 
 public:
+
+	double m_mouseX = 0.0, m_mouseY = 0.0;
+	double m_prevMouseX = 0.0, m_prevMouseY = 0.0;
+	float  m_mouseDeltaX = 0.0f, m_mouseDeltaY = 0.0f;
+
+	GLFWwindow* m_window = nullptr;
 
 	static InputMapper& GetInstance()
 	{

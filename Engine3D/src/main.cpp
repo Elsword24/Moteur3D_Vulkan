@@ -1,6 +1,9 @@
 #include "Renderer.h"
 #include "BaseComponent.h"
 #include "window.h"
+#include "Physics.h"
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
 
 void launchVulkan( HelloTriangleApplication& app, Window* window, int width, int height )
 {
@@ -36,6 +39,7 @@ int main()
 	{
 		Window window;
 		HelloTriangleApplication app;
+		Physics::PhysicsSystem m_PhysicsSystem;
 
 		Entity* camera = new Entity("mainCamera");
 		auto transform = camera->AddComponent<TransformComponent>();
@@ -46,17 +50,37 @@ int main()
 		transform->SetPosition(glm::vec3(-1, 1, 10));
 
 		window.initWindow();
-		glfwSetInputMode(window.getGLFWWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(window.getGLFWWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		auto& inputManager = InputMapper::GetInstance();
 		inputManager.Init(window.getGLFWWindow());
+		MouseComponent::s_Window = &window;
+		MouseComponent::s_Physics = &m_PhysicsSystem;
 
 		app.sceneObjects.push_back(std::make_pair(0, glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, -2.0f))));
 		app.sceneObjects.push_back(std::make_pair(1, glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f))));
+		{
+			auto rb1 = m_PhysicsSystem.CreateRigidBody();
+			rb1->SetKinematic(true);
+			rb1->SetGravityEnabled(false);
+			rb1->SetPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
+			rb1->SetCollider(std::make_shared<Physics::BoxCollider>(glm::vec3(1.0f)));
+
+			auto rb2 = m_PhysicsSystem.CreateRigidBody();
+			rb2->SetKinematic(true);
+			rb2->SetGravityEnabled(false);
+			rb2->SetPosition(glm::vec3(2.0f, 0.0f, -2.0f));
+			rb2->SetCollider(std::make_shared<Physics::BoxCollider>(glm::vec3(1.0f)));
+		}
 
 		int width = 1920, height = 1080;
 
 		launchVulkan(app, &window, width, height);
 		app.camTest = camera;
+
+		Physics::PhysicsSystem& GetPhysicsSystem = m_PhysicsSystem;
+
+		//m_PhysicsSystem.Initialize();
+
 		while (!window.WindowClosed())
 		{
 			window.PollEvent();
@@ -85,6 +109,7 @@ int main()
 
 		app.device.waitIdle();
 		window.cleanup();
+		//m_PhysicsSystem.Shutdown();
 	}
 	catch (const std::exception& e)
 	{
