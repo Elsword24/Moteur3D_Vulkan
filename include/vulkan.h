@@ -64,6 +64,15 @@ public:
 	}
 	~HelloTriangleApplication()
 	{
+		for (auto& mesh : meshVulkans)
+		{
+			mesh.vertexBuffer.clear();
+			mesh.vertexBufferMemory.clear();
+			mesh.indexBuffer.clear();
+			mesh.indicesBufferMemory.clear();
+			mesh.index = 0;
+		}
+		meshVulkans.clear();
 
 	}
 		
