@@ -12,6 +12,9 @@
 #include <glm/ext/matrix_projection.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "EventBus.h"
+#include "EventListener.h"
+
 class TransformComponent : public Component
 {
 private: 
@@ -62,9 +65,9 @@ public:
 	}
 };
 
-/*class MeshComponent : public Component
+class MeshComponent : public Component
 {
-private:
+/*private:
 	Mesh* mesh = nullptr;
 	Material* material = nullptr;
 public:
@@ -86,8 +89,8 @@ public:
 		material->Bind();
 		material->SetUniform("modelMatrix", transform->GetTransformMatrix());
 		mesh->Render();
-	}
-};*/
+	}*/
+};
 
 class CameraComponent : public Component
 {
@@ -135,7 +138,6 @@ public:
 				nearPlane,
 				farPlane
 			);
-			projectionMatrix[1][1] *= -1.0f;
 			projectionDirty = false;
 		}
 		return projectionMatrix;
@@ -202,8 +204,16 @@ class RigidBodyComponent : public Component
 private:
 	std::shared_ptr<Physics::RigidBody> body = nullptr;
 public:
-	void SetRigidBody(const std::shared_ptr<Physics::RigidBody>& rb) { body = rb; }
+	void SetRigidBody(const std::shared_ptr<Physics::RigidBody>& rb)
+	{
+		body = rb;
+		if (body && GetOwner())
+		{
+			body->SetOwner(GetOwner());
+		}
+	}
 	std::shared_ptr<Physics::RigidBody> GetRigidBody() const { return body; }
+
 	void Update(float deltatime) override
 	{
 		if (!body) return;
@@ -212,9 +222,17 @@ public:
 		transform->SetPosition(body->GetPosition());
 		transform->SetRotation(body->GetRotation());
 	}
+
+	void OnDestroy() override
+	{
+		body = nullptr; // Let the physics system handle the actual destruction of the rigid body
+	}
 };
 
-class SoundComponent : public Component {};
+class SoundComponent : public Component
+{
+	// base sound parameters
+};
 class SoundEmetteur : public SoundComponent
 {
 	//sound parameters
@@ -253,13 +271,25 @@ public:
 	}
 };
 
-class MouseComponent : public Component {
+class MouseComponent : public Component, public EventListener{
 	//mouse parameters
 public:
+	// Rendre ces pointeurs statiques inline pour pouvoir les utiliser via MouseComponent::s_Physics / ::s_Window
+	inline static Physics::PhysicsSystem* s_Physics = nullptr;
+	inline static Window* s_Window = nullptr;
 
-	static Physics::PhysicsSystem* s_Physics;
-	static Window* s_Window;
+	void MouseInit(Physics::PhysicsSystem* physics, Window* window)
+	{
+		s_Physics = physics;
+		s_Window = window;
 
+		EventBus::Get().AddListener(this);
+	}
+
+	void OnEvent(const Event& event) override
+	{
+		//Handle mouse events if needed
+	}
 
 	void Update(float deltatime) override
 	{
@@ -282,7 +312,7 @@ public:
 
 		//Convert mouse coords -> FRAMEBUFFER coordinates
 		const double sx = static_cast<double>(fbW) / static_cast<double>(winW);
-		const double sy = (double)fbH / (double)winH;
+		const double sy = static_cast<double>(fbH) / static_cast<double>(winH);
 
 		const double mx = mxWin * sx;
 		const double my = myWin * sy;
@@ -294,19 +324,37 @@ public:
 		glm::vec3 origin, direction;
 		CameraComponent::BuildMouseRay(mx, my, fbW, fbH, *cam, *cameraTransform, origin, direction);
 		glm::vec3 forward = cameraTransform->GetRotation() * glm::vec3(0, 0, -1);
-		printf("forward: %f %f %f\n", forward.x, forward.y, forward.z);
-		printf("raydir : %f %f %f\n", direction.x, direction.y, direction.z);
 
 		Physics::RaycastHit hit;
-		printf("Mouse win=(%.1f %.1f) fb=(%.1f %.1f) winSize=(%d %d) fbSize=(%d %d)\n",
-			mxWin, myWin, mx, my, winW, winH, fbW, fbH);
-		printf("Ray origin: %f %f %f\n", origin.x, origin.y, origin.z);
-		printf("Ray dir: %f %f %f\n", direction.x, direction.y, direction.z);
 
 		if (s_Physics->Raycast(origin, direction, 1000.0f, hit))
+		{
 			std::printf("HIT dist=%.3f\n", hit.distance);
+			if (hit.body)
+			{
+				Entity* hitEntity = hit.body->GetOwner();
+				if (hitEntity)
+				{
+					HitEvent event(hitEntity);
+					std::printf("Publishing HitEvent\n");
+					EventBus::Get().PublishEvent(event);
+
+				}
+				else
+				{
+					std::printf("Hit a body with no owner entity\n");
+				}
+			}
+		}
 		else
+		{
 			std::printf("Nothing hit\n");
+		}
+	}
+
+	void OnDestroy() override
+	{
+		EventBus::Get().RemoveListener(this);
 	}
 };
 

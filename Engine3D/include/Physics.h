@@ -7,6 +7,8 @@
 
 //namespace Engine
 //{
+
+class Entity;
 	namespace Physics
 	{
 		struct RaycastHit;
@@ -59,9 +61,15 @@
 
 		class RigidBody
 		{
+		private:
+			Entity* m_Owner = nullptr;
 		public:
 			RigidBody();
 			~RigidBody();
+
+			//Owner utils
+			void SetOwner(Entity* owner) { m_Owner = owner; }
+			Entity* GetOwner() const { return m_Owner; }
 
 			//Kinematic State
 			void SetPosition(const glm::vec3& position) { m_Position = position; }

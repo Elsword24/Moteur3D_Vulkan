@@ -3,6 +3,7 @@
 #include <mutex>
 #include <queue>
 #include <vector>
+#include <memory>
 
 #include "EventListener.h"
 
@@ -21,7 +22,21 @@ private:
 	std::mutex queueMutex;
 	bool immediateMode = true;
 
+	EventBus() = default;
+	~EventBus() = default;
+
+	EventBus(const EventBus&) = delete;
+	EventBus& operator=(const EventBus&) = delete;
+	EventBus(EventBus&&) = delete;
+	EventBus& operator=(EventBus&&) = delete;
+
 public:
+
+	static EventBus& Get()
+	{
+		static EventBus instance;
+		return instance;
+	}
 
 	void SetImmediateMode(bool immediate)
 	{
@@ -42,20 +57,20 @@ public:
 
 	void RemoveListener(EventListener* listener)
 	{
-		auto it = std::find(listeners.begin(), listeners.end(), [listener](const ListenerInfo& info) {
-			return info.listener == listener;
-			});
-		if (it != listeners.end())
-		{
-			listeners.erase(it);
-		}
+		listeners.erase(std::remove_if(listeners.begin(), listeners.end(),
+			[listener](const ListenerInfo& info)
+			{
+				return info.listener == listener;
+			}), listeners.end());
 	}
 
 	void PublishEvent(const Event& event)
 	{
+		std::printf("[PublishEvent] %s\n", event.GetType());
+
 		if (immediateMode)
 		{
-			//Dispatch event instantly
+			// Dispatch event instantly
 			for (const auto& infos : listeners)
 			{
 				if (infos.categoryFilter == EventCategory::All || (event.GetCategoryFlag() & infos.categoryFilter) != EventCategory::None)
@@ -63,9 +78,10 @@ public:
 					infos.listener->OnEvent(event);
 				}
 			}
-		} else
+		}
+		else
 		{
-			//Queue event to process later
+			// Queue event to process later
 			std::scoped_lock lock(queueMutex);
 			eventQueue.push(std::unique_ptr<Event>(event.Clone()));
 		}
@@ -86,9 +102,12 @@ public:
 		{
 			auto& event = *currentEvents.front();
 
-			for (auto info : listeners)
+			for (const auto& info : listeners)
 			{
-				info.listener->OnEvent(event);
+				if (info.categoryFilter == EventCategory::All || (event.GetCategoryFlag() & info.categoryFilter) != EventCategory::None)
+				{
+					info.listener->OnEvent(event);
+				}
 			}
 
 			currentEvents.pop();

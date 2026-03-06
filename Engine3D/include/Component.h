@@ -36,14 +36,7 @@ private:
 	State state = State::Uninitialized;
 public:
 
-	virtual ~Component()
-	{
-		if (state != State::Destroyed)
-		{
-			OnDestroy();
-			state = State::Destroyed;
-		}	
-	}
+	virtual ~Component() = default;
 
 	template<typename T>
 	static size_t GetTypeID()

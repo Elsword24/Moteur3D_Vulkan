@@ -69,7 +69,6 @@ static bool RayVsAABB(const glm::vec3& o, const glm::vec3& d, float maxDist, con
 	return true;
 }
 
-
 //namespace Engine {
 	namespace Physics
 	{

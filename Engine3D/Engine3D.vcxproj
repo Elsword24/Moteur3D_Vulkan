@@ -144,13 +144,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="baseComponent.cpp" />
     <ClCompile Include="Physics.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="glmConfig.h" />
+    <ClInclude Include="EntityEventSystem.h" />
     <ClInclude Include="include\BaseComponent.h" />
     <ClInclude Include="include\Component.h" />
     <ClInclude Include="include\Controler.h" />
@@ -165,7 +165,7 @@
     <ClInclude Include="include\vertex.h" />
     <ClInclude Include="include\vulkan.h" />
     <ClInclude Include="include\window.h" />
-    <ClInclude Include="Physics.h" />
+    <ClInclude Include="SceneManager.h" />
   </ItemGroup>
   <ItemGroup>
     <SlangCompileTask Include="shaders\shader.slang">
