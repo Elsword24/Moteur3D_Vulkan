@@ -4,6 +4,8 @@
 #include "EventBus.h"
 #include "EventListener.h"
 
+//This class is an exemple of a complete controller, it isn't used in the code but is done for laters updates and on how to use the event system
+
 class CameraController: public Component, public EventListener
 {
 private: 

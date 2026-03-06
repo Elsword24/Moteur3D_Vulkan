@@ -1,6 +1,10 @@
 #pragma once
 #include "Entity.h"
 
+
+//This category is here to handle sources of event you can add more category if you want but try to keep it simple and not too much categories
+//you can also use bitwise operator to combine categories for an event
+
 enum class EventCategory
 	: uint16_t
 {
@@ -15,6 +19,8 @@ enum class EventCategory
 	All = 0xffff
 };
 
+
+//This grants the possibility to compare and add events categories with bitwise operator
 inline EventCategory operator|(EventCategory a, EventCategory b)
 {
 	return static_cast<EventCategory>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
@@ -53,6 +59,9 @@ public:
     virtual Event* Clone() const override { return new type(*this); } \
 	virtual EventCategory GetCategoryFlag() const override {return categoryFlag; }
 
+
+//like the components those are exemples of events you can create your own events by 
+//inheriting from the Event class and using the macro to define the type and category of the event
 
 class WindowResizeEvent : public Event
 {

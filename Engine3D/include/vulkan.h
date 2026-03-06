@@ -1,221 +1,97 @@
 #pragma once
 
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
-#include "mesh.h"
+#include <algorithm>
+#include <array>
+#include <assert.h>
+#include <fstream>
+#include <filesystem>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <vector>
+#define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
+#include "BaseComponent.h"
 
-//struct Vertex
-//{
-//	glm::vec3 pos;
-//	glm::vec3 normal;
-//	glm::vec2 uv;
-//
-//	static vk::VertexInputBindingDescription getBindingDescription()
-//	{
-//		return { 0, sizeof(Vertex), vk::VertexInputRate::eVertex };
-//	}
-//
-//	static std::array<vk::VertexInputAttributeDescription, 3> getAttributeDescriptions()
-//	{
-//		return {
-//			vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, pos)),
-//			vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, normal)),
-//			vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, uv)) };
-//	}
-//
-//};
-//
-//struct UniformBufferObject
-//{
-//	glm::mat4 model;
-//	glm::mat4 view;
-//	glm::mat4 proj;
-//};
+#if defined(__INTELLISENSE__) || !defined(USE_CPP20_MODULES)
+#	include <vulkan/vulkan_raii.hpp>
+#else
+import vulkan_hpp;
+#endif
 
-//std::vector<Vertex> vertices;
-//std::vector<uint32_t> indices;
+#include <chrono>
 
-Mesh LoadModel(const std::string& filePath)
+#define GLM_FORCE_RADIANS
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+constexpr int      MAX_FRAMES_IN_FLIGHT = 2;
+
+const std::vector<char const*> validationLayers = {
+	"VK_LAYER_KHRONOS_validation" };
+
+#ifdef NDEBUG
+constexpr bool enableValidationLayers = false;
+#else
+constexpr bool enableValidationLayers = true;
+#endif
+
+#include "vertex.h"
+
+
+struct MeshVulkan
 {
-	Mesh mesh;
-	mesh.vertices.clear();
-	mesh.indices.clear();
-
-	auto rapidObj = rapidobj::ParseFile(filePath);
-
-	if (!std::filesystem::exists(filePath))
-	{
-		throw std::runtime_error("model file not found! " + std::filesystem::absolute(filePath).string());
-	}
-
-	if (rapidObj.error)
-	{
-		throw std::runtime_error("Failed to load model! " + rapidObj.error.line);
-	}
-
-	rapidobj::Triangulate(rapidObj);
-
-	for (const auto& shape : rapidObj.shapes)
-	{
-		for (const auto& index : shape.mesh.indices)
-		{
-			Vertex vertex{};
-			vertex.pos =
-			{
-				rapidObj.attributes.positions[3 * index.position_index + 0],
-				rapidObj.attributes.positions[3 * index.position_index + 1],
-				rapidObj.attributes.positions[3 * index.position_index + 2]
-
-			};
+	vk::raii::Buffer vertexBuffer = nullptr;
+	vk::raii::DeviceMemory vertexBufferMemory = nullptr;
+	vk::raii::Buffer indexBuffer = nullptr;
+	vk::raii::DeviceMemory indicesBufferMemory = nullptr;
+	uint32_t index = 0;
+};
 
 
-			if (index.normal_index != -1)
-			{
-				vertex.normal =
-				{
-					rapidObj.attributes.normals[3 * index.normal_index + 0],
-					rapidObj.attributes.normals[3 * index.normal_index + 1],
-					rapidObj.attributes.normals[3 * index.normal_index + 2],
-				};
-			}
-			else
-			{
-				vertex.normal = { 0.0f, 1.0f, 0.0f };
-			};
+std::vector<MeshVulkan> meshVulkans;
 
-			if (index.texcoord_index != -1)
-			{
-				vertex.uv =
-				{
-					rapidObj.attributes.texcoords[2 * index.texcoord_index + 0],
-					1.0f - rapidObj.attributes.texcoords[2 * index.texcoord_index + 1]
-
-				};
-			}
-			else
-			{
-				vertex.uv = { 0.0f, 0.0f };
-			};
-
-			mesh.indices.push_back(static_cast<uint32_t>(mesh.indices.size()));
-			mesh.vertices.push_back(vertex);
-		}
-	}
-
-	std::cout << "Loaded model with " << mesh.vertices.size() << " vertices." << std::endl;
-	std::cout << "Loaded model with " << mesh.indices.size() << " indices." << std::endl;
-	return mesh;
-}
-
-
-//class ThirdPersonCamera : public Camera
-//{
-//private:
-//	glm::vec3 targetPosition;
-//	glm::vec3 targetForward;
-//	float followDistance;
-//	float followHeight;
-//	float followSmoothness;
-//	float minDstance;
-//	float raycastDistance;
-//	glm::vec3 desiredPosition;
-//	glm::vec3 smoothDampVelocity;
-//
-//public:
-//
-//	ThirdPersonCamera(
-//		float followDistance = 5.0f,
-//		float followHeight = 2.0f,
-//		float followSmoothness = 0.1f,
-//		float minDistance = 1.0f
-//	);
-//
-//	void updatePosition(
-//		const glm::vec3& targetPos,
-//		const glm::vec3& targetFwd,
-//		float deltaTime
-//	)
-//	{
-//		targetPosition = targetPos;
-//		targetForward = glm::normalize(targetFwd);
-//		glm::vec3 offset = -targetForward * followDistance;
-//		offset.y = followHeight;
-//
-//		desiredPosition = targetPosition + offset;
-//
-//		camera.SetPosition(glm::mix(camera.getPosition(), desiredPosition, 1.0f - pow(followSmoothness, deltaTime * 60.0f)));
-//
-//		camera.SetFront(glm::normalize(targetPosition - camera.getPosition()));
-//
-//		camera.SetRight(glm::normalize(glm::cross(camera.getFront(), camera.GetWordlUp())));
-//		camera.SetUp(glm::normalize(glm::cross(camera.GetRight(), camera.getFront())));
-//	}
-//	//void handleOcclusion(const Scene& scene) {
-//	// Cast a ray from the target to the desired camera position
-//	//Ray ray;
-//	//ray.origin = targetPosition;
-//	//ray.direction = glm::normalize(desiredPosition - targetPosition);
-//
-//	//// Check for intersections with scene objects
-//	//RaycastHit hit;
-//	//if (scene.raycast(ray, hit, glm::length(desiredPosition - targetPosition))) {
-//	//	// If there's an intersection, move the camera to the hit point
-//	//	// minus a small offset to avoid clipping
-//	//	float offsetDistance = 0.2f;
-//	//	position = hit.point - (ray.direction * offsetDistance);
-//
-//	//	// Ensure we don't get too close to the target
-//	//	float currentDistance = glm::length(position - targetPosition);
-//	//	if (currentDistance < minDistance) {
-//	//		position = targetPosition + ray.direction * minDistance;
-//	//	}
-//
-//	//	// Update the camera to look at the target
-//	//	front = glm::normalize(targetPosition - position);
-//	//	right = glm::normalize(glm::cross(front, worldUp));
-//	//	up = glm::normalize(glm::cross(right, front));
-//	//}
-//	void orbit(float horizontalAngle, float verticalAngle);
-//
-//	void setFollowDistance(float distance) { followDistance = distance; }
-//	void setFollowHeight(float height) { followHeight = height; }
-//	void setFollowSmoothness(float smoothness) { followSmoothness = smoothness; }
-//};
-
-std::vector<Mesh> meshes;
 
 class HelloTriangleApplication
 {
 public:
 	HelloTriangleApplication()
 	{
-		window = new Window();
-		camera = std::make_unique<Camera>(window);
 
-		monkey = LoadModel("../shaders/monkey.obj");
-		box = LoadModel("../shaders/stormtrooper.obj");
-
-		meshes.push_back(std::move(box));
-		meshes.push_back(std::move(monkey));
-
+		
 	}
 	~HelloTriangleApplication()
 	{
-		delete window;
-		window = nullptr;
-	}
+		for (auto& mesh : meshVulkans)
+		{
+			mesh.vertexBuffer.clear();
+			mesh.vertexBufferMemory.clear();
+			mesh.indexBuffer.clear();
+			mesh.indicesBufferMemory.clear();
+			mesh.index = 0;
+		}
+		meshVulkans.clear();
 
-	void run()
+	}
+		
+
+	void Vulkan(const std::vector<Vertex>& vertices, const std::vector<uint32_t> indices)
 	{
-
-		initWindow();
-		initVulkan();
-		camera->setupInputCallbacks();
-		mainLoop();
-		cleanup();
+		MeshVulkan meshVulkan;
+		
+		meshVulkan.index = static_cast<uint32_t>(indices.size());
+		createVertexBuffer(vertices, meshVulkan.vertexBuffer, meshVulkan.vertexBufferMemory);
+		createIndexBuffer(indices, meshVulkan.indexBuffer, meshVulkan.indicesBufferMemory);
+		
+		meshVulkans.push_back(std::move(meshVulkan));
 	}
 
-private:
-	Window* window = nullptr;
+	std::vector<std::pair<uint32_t, glm::mat4>> sceneObjects;
+	
+public:
 	vk::raii::Context                context;
 	vk::raii::Instance               instance = nullptr;
 	vk::raii::DebugUtilsMessengerEXT debugMessenger = nullptr;
@@ -248,59 +124,36 @@ private:
 	std::vector<vk::raii::Semaphore> renderFinishedSemaphores;
 	std::vector<vk::raii::Fence>     inFlightFences;
 	uint32_t                         frameIndex = 0;
-	std::unique_ptr<Camera> camera;
-	Mesh monkey;
-	Mesh box;
+	Entity* camTest = nullptr;
+
+
+public:
+
+	vk::VertexInputBindingDescription getBindingDescription()
+	{
+		return vk::VertexInputBindingDescription{
+			.binding = 0,
+			.stride = sizeof(Vertex),
+			.inputRate = vk::VertexInputRate::eVertex
+		};
+	}
+
+	std::array<vk::VertexInputAttributeDescription, 3> getAttributeDescriptions()
+	{
+		return { {
+			{.location = 0, .binding = 0, .format = vk::Format::eR32G32B32Sfloat,
+			  .offset = offsetof(Vertex, pos)    },
+			{.location = 1, .binding = 0, .format = vk::Format::eR32G32B32Sfloat,
+			  .offset = offsetof(Vertex, normal) },
+			{.location = 2, .binding = 0, .format = vk::Format::eR32G32Sfloat,
+			  .offset = offsetof(Vertex, uv)     },
+		} };
+	}
 
 	bool framebufferResized = false;
 
 	std::vector<const char*> requiredDeviceExtension = {
 		vk::KHRSwapchainExtensionName };
-
-	void initWindow()
-	{
-		window->initWindow();
-	}
-
-	/*static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
-	{
-		auto app = static_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
-		app->framebufferResized = true;
-	}*/
-
-	void initVulkan()
-	{
-		createInstance();
-		setupDebugMessenger();
-		createSurface();
-		pickPhysicalDevice();
-		createLogicalDevice();
-		createSwapChain();
-		createImageViews();
-		createDescriptorSetLayout();
-		createGraphicsPipeline();
-		createTextureImage();
-		createCommandPool();
-		createVertexBuffer();
-		createIndexBuffer();
-		createUniformBuffers();
-		createDescriptorPool();
-		createDescriptorSets();
-		createCommandBuffers();
-		createSyncObjects();
-	}
-
-	void mainLoop()
-	{
-		while (!window->WindowClosed())
-		{
-			window->PollEvent();
-			camera->processInput(*window, *camera, 0.16f);
-			drawFrame();
-		}
-
-		device.waitIdle();
-	}
 
 	void cleanupSwapChain()
 	{
@@ -308,25 +161,12 @@ private:
 		swapChain = nullptr;
 	}
 
-	void cleanup()
+	void recreateSwapChain(int& width, int& height)
 	{
-		window->cleanup();
-	}
-
-	void recreateSwapChain()
-	{
-		int width = 0, height = 0;
-		window->GetFramebufferSize(width, height);
-		while (width == 0 || height == 0)
-		{
-			window->GetFramebufferSize(width, height);
-			window->WaitEvents();
-		}
-
 		device.waitIdle();
 
 		cleanupSwapChain();
-		createSwapChain();
+		createSwapChain(width, height);
 		createImageViews();
 	}
 
@@ -393,10 +233,10 @@ private:
 		debugMessenger = instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);
 	}
 
-	void createSurface()
+	void createSurface(GLFWwindow* glfwWindow)
 	{
 		VkSurfaceKHR _surface;
-		if (glfwCreateWindowSurface(*instance, window->getGLFWWindow(), nullptr, &_surface) != 0)
+		if (glfwCreateWindowSurface(*instance, glfwWindow, nullptr, &_surface) != 0) 
 		{
 			throw std::runtime_error("failed to create window surface!");
 		}
@@ -484,10 +324,11 @@ private:
 		queue = vk::raii::Queue(device, queueIndex, 0);
 	}
 
-	void createSwapChain()
+
+	void createSwapChain(int& width, int& height)
 	{
 		auto surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);
-		swapChainExtent = chooseSwapExtent(surfaceCapabilities);
+		swapChainExtent = chooseSwapExtent(surfaceCapabilities, width, height);
 		swapChainSurfaceFormat = chooseSwapSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(*surface));
 		vk::SwapchainCreateInfoKHR swapChainCreateInfo{ .surface = *surface,
 													   .minImageCount = chooseSwapMinImageCount(surfaceCapabilities),
@@ -520,21 +361,21 @@ private:
 
 	void createDescriptorSetLayout()
 	{
-		vk::DescriptorSetLayoutBinding    uboLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr);
+		vk::DescriptorSetLayoutBinding    uboLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex |vk::ShaderStageFlagBits::eFragment, nullptr);
 		vk::DescriptorSetLayoutCreateInfo layoutInfo{ .bindingCount = 1, .pBindings = &uboLayoutBinding };
 		descriptorSetLayout = vk::raii::DescriptorSetLayout(device, layoutInfo);
 	}
 
 	void createGraphicsPipeline()
 	{
-		vk::raii::ShaderModule shaderModule = createShaderModule(readFile("../shaders/slang.spv"));
+		vk::raii::ShaderModule shaderModule = createShaderModule(readFile("shaders/shader.slang.spv"));
 
 		vk::PipelineShaderStageCreateInfo vertShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eVertex, .module = shaderModule, .pName = "vertMain" };
 		vk::PipelineShaderStageCreateInfo fragShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eFragment, .module = shaderModule, .pName = "fragMain" };
 		vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
-		auto                                     bindingDescription = Vertex::getBindingDescription();
-		auto                                     attributeDescriptions = Vertex::getAttributeDescriptions();
+		auto                                     bindingDescription = getBindingDescription();
+		auto                                     attributeDescriptions = getAttributeDescriptions();
 		vk::PipelineVertexInputStateCreateInfo   vertexInputInfo{ .vertexBindingDescriptionCount = 1, .pVertexBindingDescriptions = &bindingDescription, .vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()), .pVertexAttributeDescriptions = attributeDescriptions.data() };
 		vk::PipelineInputAssemblyStateCreateInfo inputAssembly{ .topology = vk::PrimitiveTopology::eTriangleList };
 		vk::PipelineViewportStateCreateInfo      viewportState{ .viewportCount = 1, .scissorCount = 1 };
@@ -576,10 +417,11 @@ private:
 		graphicsPipeline = vk::raii::Pipeline(device, nullptr, pipelineCreateInfoChain.get<vk::GraphicsPipelineCreateInfo>());
 	}
 
-	void createTextureImage()
+	//Function to implement to add textures
+	/*void createTextureImage()
 	{
 
-	}
+	}*/
 
 	void createCommandPool()
 	{
@@ -588,55 +430,36 @@ private:
 		commandPool = vk::raii::CommandPool(device, poolInfo);
 	}
 
-	void createVertexBuffer()
+	void createVertexBuffer(std::vector<Vertex> vertices, vk::raii::Buffer& vertexBuffer, vk::raii::DeviceMemory& vertexBufferMemory)
 	{
-		for (auto& mesh : meshes)
-		{
-			if (mesh.vertices.empty())
-			{
-				std::cerr << "vertices mesh is empty" << std::endl;
-			}
+		vk::DeviceSize         bufferSize = sizeof(vertices[0]) * vertices.size();
+		vk::raii::Buffer       stagingBuffer({});
+		vk::raii::DeviceMemory stagingBufferMemory({});
 
-			vk::DeviceSize         bufferSize = sizeof(mesh.vertices[0]) * mesh.vertices.size();
-			vk::raii::Buffer       stagingBuffer({});
-			vk::raii::DeviceMemory stagingBufferMemory({});
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory); void* dataStaging = stagingBufferMemory.mapMemory(0, bufferSize);
+		memcpy(dataStaging, vertices.data(), bufferSize);
+		stagingBufferMemory.unmapMemory();
 
-			createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory); void* dataStaging = stagingBufferMemory.mapMemory(0, bufferSize);
-			memcpy(dataStaging, mesh.vertices.data(), bufferSize);
-			stagingBufferMemory.unmapMemory();
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, vertexBuffer, vertexBufferMemory);
 
-			createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mesh.vertexBuffer, mesh.vertexBufferMemory);
-
-			copyBuffer(stagingBuffer, mesh.vertexBuffer, bufferSize);
-
-		}
-		if (meshes.empty())
-		{
-			std::cerr << "meshes is empty" << std::endl;
-		}
-
+		copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
 	}
 
-	void createIndexBuffer()
+	void createIndexBuffer(std::vector<uint32_t> indices, vk::raii::Buffer& indexBuffer, vk::raii::DeviceMemory& indexBufferMemory)
 	{
-		for (auto& mesh : meshes)
-		{
-			vk::DeviceSize bufferSize = sizeof(mesh.indices[0]) * mesh.indices.size();
+		vk::DeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+		vk::raii::Buffer       stagingBuffer({});
+		vk::raii::DeviceMemory stagingBufferMemory({});
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 
-			vk::raii::Buffer       stagingBuffer({});
-			vk::raii::DeviceMemory stagingBufferMemory({});
-			createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+		void* data = stagingBufferMemory.mapMemory(0, bufferSize);
+		memcpy(data, indices.data(), (size_t)bufferSize);
+		stagingBufferMemory.unmapMemory();
 
-			void* data = stagingBufferMemory.mapMemory(0, bufferSize);
-			memcpy(data, mesh.indices.data(), (size_t)bufferSize);
-			stagingBufferMemory.unmapMemory();
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, indexBuffer, indexBufferMemory);
 
-			createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mesh.indexBuffer, mesh.indexBufferMemory);
-
-			copyBuffer(stagingBuffer, mesh.indexBuffer, bufferSize);
-
-		}
+		copyBuffer(stagingBuffer, indexBuffer, bufferSize);
 	}
 
 	void createUniformBuffers()
@@ -750,36 +573,40 @@ private:
 			.pColorAttachments = &attachmentInfo };
 		commandBuffer.beginRendering(renderingInfo);
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *graphicsPipeline);
-		////// faire les push constant apres bindpipeline
+		// faire les push constant apres bindpipeline
 		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapChainExtent.width), static_cast<float>(swapChainExtent.height), 0.0f, 1.0f));
 		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapChainExtent));
 
-		for (size_t i = 0; i < meshes.size(); ++i)
+		///// faut bouger sa! c le constructeur dans Renderer
+
+		if (sceneObjects.size() <= 0)
 		{
-			glm::mat4 model;
+			std::cout << "deso c vide" << std::endl;
+		}
 
-			if (i == 0) {
-				model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
-			}
-			else {
-				model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-			}
-
+		for (const auto& object : sceneObjects)
+		{
+			auto& mesh = meshVulkans[object.first];
 			commandBuffer.pushConstants<glm::mat4>(
 				*pipelineLayout,
 				vk::ShaderStageFlagBits::eVertex,
 				0,
-				model
+				object.second
 			);
-		}
 
-		for (const auto& mesh : meshes)
-		{
 			commandBuffer.bindVertexBuffers(0, *mesh.vertexBuffer, { 0 });
 			commandBuffer.bindIndexBuffer(*mesh.indexBuffer, 0, vk::IndexType::eUint32);
-			commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, *descriptorSets[frameIndex], nullptr);
-			commandBuffer.drawIndexed(mesh.indices.size(), 1, 0, 0, 0);
+			commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, *pipelineLayout, 0, *descriptorSets[frameIndex], nullptr);
+			commandBuffer.drawIndexed(mesh.index, 1, 0, 0, 0);
 		}
+
+
+		if (meshVulkans.size() <= 0)
+		{
+			std::cout << "personne dans le vecteur" << std::endl;
+		}
+
+
 		commandBuffer.endRendering();
 		// After rendering, transition the swapchain image to PRESENT_SRC
 		transition_image_layout(
@@ -842,6 +669,7 @@ private:
 		}
 	}
 
+	///////// faut changer ca aussi!!
 	void updateUniformBuffer(uint32_t currentImage)
 	{
 		static auto startTime = std::chrono::high_resolution_clock::now();
@@ -849,20 +677,29 @@ private:
 		auto  currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float>(currentTime - startTime).count();
 
+		auto cam = camTest->GetComponent<CameraComponent>();
 		UniformBufferObject ubo{};
-		ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		//// 
+		sceneObjects[1].second = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-		ubo.view = camera->getViewMatrix();
-		ubo.proj = camera->getProjectionMatrix(
-			static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height)
-		);
+		float aspect = static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height);
+		cam->SetPerspective(45.0f, aspect, 0.1f, 1000.0f);
+
+		// set Camera
+		ubo.view = cam->GetViewMatrix();
+		ubo.proj = cam->GetProjectionMatrix();
+
 
 		ubo.proj[1][1] *= -1;
+
+		ubo.light.posWorld = { 0.0f,2.0f,0.0f };
+		ubo.light.color = { 1.0f,0.0f,0.0f };
+		ubo.light.intensity = 1.0f;
 
 		memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 	}
 
-	void drawFrame()
+	void drawFrame(int& width, int& height)
 	{
 		// Note: inFlightFences, presentCompleteSemaphores, and commandBuffers are indexed by frameIndex,
 		//       while renderFinishedSemaphores is indexed by imageIndex
@@ -878,7 +715,7 @@ private:
 		// here and does not need to be caught by an exception.
 		if (result == vk::Result::eErrorOutOfDateKHR)
 		{
-			recreateSwapChain();
+			recreateSwapChain(width, height);
 			return;
 		}
 		// On other success codes than eSuccess and eSuboptimalKHR we just throw an exception.
@@ -917,7 +754,7 @@ private:
 		if ((result == vk::Result::eSuboptimalKHR) || (result == vk::Result::eErrorOutOfDateKHR) || framebufferResized)
 		{
 			framebufferResized = false;
-			recreateSwapChain();
+			recreateSwapChain(width, height);
 		}
 		else
 		{
@@ -963,15 +800,12 @@ private:
 			vk::PresentModeKHR::eFifo;
 	}
 
-	vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities)
+	vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities, int& width, int& height)
 	{
 		if (capabilities.currentExtent.width != 0xFFFFFFFF)
 		{
 			return capabilities.currentExtent;
 		}
-		int width, height;
-
-		window->GetFramebufferSize(width, height);
 
 		return {
 			std::clamp<uint32_t>(width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
@@ -1015,19 +849,5 @@ private:
 		file.close();
 		return buffer;
 	}
+
 };
-
-
-void step0()
-{
-	try
-	{
-		HelloTriangleApplication app;
-		app.run();
-	}
-	catch (const std::exception& e)
-	{
-		std::cerr << e.what() << std::endl;
-	}
-
-}
