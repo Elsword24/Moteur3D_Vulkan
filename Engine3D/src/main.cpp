@@ -1,22 +1,25 @@
 #include "Renderer.h"
 #include "BaseComponent.h"
 #include "window.h"
-#include "InputManager.h"
+#include "InputMapper.h"
 #include "spline.h"
+
+constexpr uint32_t WIDTH = 800;
+constexpr uint32_t HEIGHT = 600;
 
 void launchVulkan( HelloTriangleApplication& app, Window* window, int width, int height )
 {
 	Mesh monkey;
-	monkey.LoadModel("./Assets/monkey.obj");
+	monkey.LoadModel("Assets/monkey.obj");
 
 	Mesh cube;
-	cube.LoadModel("../shaders/box.obj");
+	cube.LoadModel("Assets/box.obj");
 	Mesh cube1;
-	cube1.LoadModel("../shaders/box.obj");
+	cube1.LoadModel("Assets/box.obj");
 	Mesh cube2;
-	cube2.LoadModel("../shaders/box.obj");
+	cube2.LoadModel("Assets/box.obj");
 	Mesh cube3;
-	cube3.LoadModel("../shaders/box.obj");
+	cube3.LoadModel("Assets/box.obj");
 
 	app.createInstance();
 	app.setupDebugMessenger();
@@ -45,7 +48,7 @@ void launchVulkan( HelloTriangleApplication& app, Window* window, int width, int
 
 int main()
 {
-
+	
 	try
 	{
 		Window window(WIDTH, HEIGHT);
@@ -85,7 +88,7 @@ int main()
 
 		//app.initWindow();
 
-		window.initWindow();
+		//window.initWindow();
 		input::init(window.getGLFWWindow());
 		app.sceneObjects.push_back(std::make_pair(1, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 5.0f))));
 		app.sceneObjects.push_back(std::make_pair(2, glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 0.0f))));
@@ -105,7 +108,8 @@ int main()
 			float deltaTime = currentFrame - lastFrame;
 			lastFrame = currentFrame;
 
-			inputManager.Update();
+			InputMapper::GetInstance().Update();
+			//inputManager.Update();
 
 			auto Cam = app.camTest->GetComponent<InputComponent>();
 			Cam->Update(0.16f);
