@@ -54,22 +54,7 @@ std::vector<MeshVulkan> meshVulkans;
 
 class VulkanRAII
 {
-public:
-	VulkanRAII(GLFWwindow* window);
-	~VulkanRAII() = default;
-		
-	//TODO : A Déplacer 
-	/*void Vulkan(const std::vector<Vertex>& vertices, const std::vector<uint32_t> indices)
-	{
-		MeshVulkan meshVulkan;
-		
-		meshVulkan.index = static_cast<uint32_t>(indices.size());
-		createVertexBuffer(vertices, meshVulkan.vertexBuffer, meshVulkan.vertexBufferMemory);
-		createIndexBuffer(indices, meshVulkan.indexBuffer, meshVulkan.indicesBufferMemory);
-		
-		meshVulkans.push_back(std::move(meshVulkan));
-	}*/
-	//std::vector<std::pair<uint32_t, glm::mat4>> sceneObjects;
+
 	
 private:
 	GLFWwindow						 *m_window = nullptr;
@@ -124,6 +109,29 @@ private:
 	vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
 
 public:
+
+	VulkanRAII(GLFWwindow* window);
+	~VulkanRAII() = default;
+
+	const vk::raii::Device& GetDevice() const;
+	const vk::SurfaceFormatKHR& GetSwapChainSurfaceFormat() const;
+	const vk::raii::PhysicalDevice& GetPhysicalDevice() const;
+	const vk::raii::CommandPool& GetCommandPool() const;
+	const std::vector<vk::raii::ImageView>& GetSwapChainImageViews() const;
+	const vk::Extent2D& GetSwapChainExtent() const;
+	const std::vector<vk::Image>& GetSwapChainImages() const;
+	//TODO : A Déplacer 
+	/*void Vulkan(const std::vector<Vertex>& vertices, const std::vector<uint32_t> indices)
+	{
+		MeshVulkan meshVulkan;
+
+		meshVulkan.index = static_cast<uint32_t>(indices.size());
+		createVertexBuffer(vertices, meshVulkan.vertexBuffer, meshVulkan.vertexBufferMemory);
+		createIndexBuffer(indices, meshVulkan.indexBuffer, meshVulkan.indicesBufferMemory);
+
+		meshVulkans.push_back(std::move(meshVulkan));
+	}*/
+	
 
 	/*void cleanupSwapChain()
 	{

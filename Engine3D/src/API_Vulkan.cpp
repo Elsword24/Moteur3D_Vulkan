@@ -75,10 +75,45 @@ vk::Extent2D VulkanRAII::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capa
 	};
 }
 
+const vk::raii::Device& VulkanRAII::GetDevice() const
+{
+	return device;
+}
+
+const vk::SurfaceFormatKHR& VulkanRAII::GetSwapChainSurfaceFormat() const
+{
+	return swapChainSurfaceFormat;
+}
+
+const vk::raii::PhysicalDevice& VulkanRAII::GetPhysicalDevice() const
+{
+	return physicalDevice;
+}
+
+const vk::raii::CommandPool& VulkanRAII::GetCommandPool() const
+{
+	return commandPool;
+}
+
+const std::vector<vk::raii::ImageView>& VulkanRAII::GetSwapChainImageViews() const
+{
+	return swapChainImageViews;
+}
+
+const vk::Extent2D& VulkanRAII::GetSwapChainExtent() const
+{
+	return swapChainExtent;
+}
+
+const std::vector<vk::Image>& VulkanRAII::GetSwapChainImages() const
+{
+	return swapChainImages;
+}
+
 void VulkanRAII::createInstance(const char* Title)
 {
 
-	constexpr vk::ApplicationInfo appInfo
+	const vk::ApplicationInfo appInfo
 	{
 		.pApplicationName = Title,
 		.applicationVersion = VK_MAKE_VERSION(1,0,0),
