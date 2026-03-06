@@ -375,6 +375,71 @@ std::vector<char> Renderer::readFile(const std::string& filename)
 	return buffer;
 }
 
+void Renderer::drawFrame()
+{
+	// Note: inFlightFences, presentCompleteSemaphores, and commandBuffers are indexed by frameIndex,
+	//       while renderFinishedSemaphores is indexed by imageIndex
+	auto fenceResult = m_ObserverVulkan->GetDevice().waitForFences(*inFlightFences[frameIndex], vk::True, UINT64_MAX);
+	if (fenceResult != vk::Result::eSuccess)
+	{
+		throw std::runtime_error("failed to wait for fence!");
+	}
+
+	auto [result, imageIndex] = m_ObserverVulkan->GetSwapChain().acquireNextImage(UINT64_MAX, *presentCompleteSemaphores[frameIndex], nullptr);
+
+	//// Due to VULKAN_HPP_HANDLE_ERROR_OUT_OF_DATE_AS_SUCCESS being defined, eErrorOutOfDateKHR can be checked as a result
+		//// here and does not need to be caught by an exception.
+	//if (result == vk::Result::eErrorOutOfDateKHR)
+	//{
+	//	recreateSwapChain(width, height);
+	//	return;
+	//}
+	//// On other success codes than eSuccess and eSuboptimalKHR we just throw an exception.
+		//// On any error code, aquireNextImage already threw an exception.
+	//if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
+	//{
+	//	assert(result == vk::Result::eTimeout || result == vk::Result::eNotReady);
+	//	throw std::runtime_error("failed to acquire swap chain image!");
+	//}
+	updateUniformBuffer(frameIndex);
+
+	// Only reset the fence if we are submitting work
+	m_ObserverVulkan->GetDevice().resetFences(*inFlightFences[frameIndex]);
+
+	commandBuffers[frameIndex].reset();
+	recordCommandBuffer(imageIndex);
+
+	vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	const vk::SubmitInfo   submitInfo{ .waitSemaphoreCount = 1,
+		.pWaitSemaphores = &*presentCompleteSemaphores[frameIndex],
+		.pWaitDstStageMask = &waitDestinationStageMask,
+		.commandBufferCount = 1,
+		.pCommandBuffers = &*commandBuffers[frameIndex],
+		.signalSemaphoreCount = 1,
+		.pSignalSemaphores = &*renderFinishedSemaphores[imageIndex] };
+	m_ObserverVulkan->GetQueue().submit(submitInfo, *inFlightFences[frameIndex]);
+
+	const vk::PresentInfoKHR presentInfoKHR{ .waitSemaphoreCount = 1,
+		.pWaitSemaphores = &*renderFinishedSemaphores[imageIndex],
+		.swapchainCount = 1,
+		.pSwapchains = &*m_ObserverVulkan->GetSwapChain(),
+		.pImageIndices = &imageIndex };
+	result = m_ObserverVulkan->GetQueue().presentKHR(presentInfoKHR);
+	// Due to VULKAN_HPP_HANDLE_ERROR_OUT_OF_DATE_AS_SUCCESS being defined, eErrorOutOfDateKHR can be checked as a result
+	// here and does not need to be caught by an exception.
+	//if ((result == vk::Result::eSuboptimalKHR) || (result == vk::Result::eErrorOutOfDateKHR) || framebufferResized)
+	//{
+	//	framebufferResized = false;
+	//	recreateSwapChain(width, height);
+	//}
+	//else
+	//{
+	//	// There are no other success codes than eSuccess; on any error code, presentKHR already threw an exception.
+	//	assert(result == vk::Result::eSuccess);
+	//}
+	frameIndex = (frameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
+}
+
 Renderer::Renderer(VulkanRAII* ObserverVulkan)
 	:m_ObserverVulkan(ObserverVulkan)
 {

@@ -110,6 +110,16 @@ const std::vector<vk::Image>& VulkanRAII::GetSwapChainImages() const
 	return swapChainImages;
 }
 
+const vk::raii::SwapchainKHR& VulkanRAII::GetSwapChain() const
+{
+	return swapChain;
+}
+
+const vk::raii::Queue& VulkanRAII::GetQueue() const
+{
+	return queue;
+}
+
 void VulkanRAII::createInstance(const char* Title)
 {
 
