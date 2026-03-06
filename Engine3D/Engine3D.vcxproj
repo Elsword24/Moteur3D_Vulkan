@@ -162,7 +162,7 @@
     <ClInclude Include="include\Renderer.h" />
     <ClInclude Include="include\UIEvent.h" />
     <ClInclude Include="include\vertex.h" />
-    <ClInclude Include="include\vulkan.h" />
+    <ClInclude Include="include\API_Vulkan.h" />
     <ClInclude Include="include\window.h" />
   </ItemGroup>
   <ItemGroup>

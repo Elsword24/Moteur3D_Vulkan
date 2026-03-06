@@ -65,7 +65,7 @@
     <ClInclude Include="include\vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\vulkan.h">
+    <ClInclude Include="include\API_Vulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\window.h">

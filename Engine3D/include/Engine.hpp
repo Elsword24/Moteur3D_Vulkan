@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "window.h"
-#include "vulkan.h"
+#include "API_Vulkan.h"
 #include "Renderer.h"
 
 
@@ -17,9 +17,9 @@ private:
 	std::unique_ptr<Renderer> m_Renderer;
 
 private:
-	void SettingVulkan()
+	void SettingVulkan(const char* Title)
 	{
-		m_Vulkan->createInstance();
+		m_Vulkan->createInstance(Title);
 		m_Vulkan->setupDebugMessenger();
 		m_Vulkan->createSurface(m_Window.get()->getGLFWWindow());
 		m_Vulkan->pickPhysicalDevice();
@@ -44,7 +44,7 @@ public:
 	{
 		m_Window = std::make_unique<Window>(Title, Width, Height);
 		m_Vulkan = std::make_unique<VulkanRAII>(m_Window.get()->getGLFWWindow());
-		SettingVulkan();
+		SettingVulkan(Title);
 		m_Renderer = std::make_unique<Renderer>(m_Vulkan.get());
 	}
 	~EngineQVY() = default;
