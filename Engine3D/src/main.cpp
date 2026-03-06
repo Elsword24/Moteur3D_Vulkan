@@ -4,13 +4,13 @@
 #include "InputMapper.h"
 #include "spline.h"
 
-constexpr uint32_t WIDTH = 800;
-constexpr uint32_t HEIGHT = 600;
+//constexpr uint32_t WIDTH = 800;
+//constexpr uint32_t HEIGHT = 600;
 
-void launchVulkan( HelloTriangleApplication& app, Window* window, int width, int height )
+void launchVulkan( HelloTriangleApplication& app, Window& window, int& width, int& height )
 {
-	Mesh monkey;
-	monkey.LoadModel("Assets/monkey.obj");
+	//Mesh monkey;
+	//monkey.LoadModel("Assets/monkey.obj");
 
 	Mesh cube;
 	cube.LoadModel("Assets/box.obj");
@@ -23,7 +23,7 @@ void launchVulkan( HelloTriangleApplication& app, Window* window, int width, int
 
 	app.createInstance();
 	app.setupDebugMessenger();
-	app.createSurface(window->getGLFWWindow());
+	app.createSurface(window.getGLFWWindow());
 	app.pickPhysicalDevice();
 	app.createLogicalDevice();
 	app.createSwapChain(width, height);
@@ -32,7 +32,7 @@ void launchVulkan( HelloTriangleApplication& app, Window* window, int width, int
 	app.createGraphicsPipeline();
 	//app.createTextureImage();
 	app.createCommandPool();
-	app.Vulkan(monkey.GetVertices(), monkey.GetIndices());
+	//app.Vulkan(monkey.GetVertices(), monkey.GetIndices());
 	app.Vulkan(cube.GetVertices(), cube.GetIndices());
 	app.Vulkan(cube1.GetVertices(), cube1.GetIndices());
 	app.Vulkan(cube2.GetVertices(), cube2.GetIndices());
@@ -51,7 +51,9 @@ int main()
 	
 	try
 	{
-		Window window(WIDTH, HEIGHT);
+		int width = 800, height = 600;
+
+		Window window(width, height);
 		HelloTriangleApplication app;
 
 
@@ -62,14 +64,13 @@ int main()
 		camera->AddComponent<MouseComponent>();
 
 
-
 		frenet repere;
 
 
-		glm::vec3 p_0 = { -1, 1, 10 };
-		glm::vec3 p_1 = { 2, 2, 2 };
-		glm::vec3 p_2 = { 5, 5, 5 };
-		glm::vec3 p_3 = { 8, 8, 8 };
+		//glm::vec3 p_0 = { -1, 1, 10 };
+		//glm::vec3 p_1 = { 2, 2, 2 };
+		//glm::vec3 p_2 = { 5, 5, 5 };
+		//glm::vec3 p_3 = { 8, 8, 8 };
 		repere.Up = { 0.f,1.f ,0.f };
 
 		std::vector<glm::vec3> pointBase =
@@ -83,32 +84,35 @@ int main()
 			{  0.0f, 3.0f, -15.0f },
 		};
 
-
 		CameraSpline cameraSpline(camera, pointBase, 100);
 
 		//app.initWindow();
 
 		//window.initWindow();
-		input::init(window.getGLFWWindow());
-		app.sceneObjects.push_back(std::make_pair(1, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 5.0f))));
-		app.sceneObjects.push_back(std::make_pair(2, glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 0.0f))));
-		app.sceneObjects.push_back(std::make_pair(3, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, -5.0f))));
-		app.sceneObjects.push_back(std::make_pair(4, glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, -10.0f))));
-		int width = 1920, height = 1080;
 
-		launchVulkan(app, &window, width, height);
+		input::init(window.getGLFWWindow());
+		auto& inputManager = InputMapper::GetInstance();
+		inputManager.Init(window.getGLFWWindow());
+
+		app.sceneObjects.push_back(std::make_pair(0, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 5.0f))));
+		app.sceneObjects.push_back(std::make_pair(1, glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 0.0f))));
+		app.sceneObjects.push_back(std::make_pair(2, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, -5.0f))));
+		app.sceneObjects.push_back(std::make_pair(3, glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, -10.0f))));
+
+
+		launchVulkan(app, window, width, height);
 		app.camTest = camera;
 
-		float lastFrame = 0.0f;
+		//float lastFrame = 0.0f;
 
 		while (!window.WindowClosed())
 		{
-
-			float currentFrame = glfwGetTime();
+			window.PollEvent();
+			inputManager.Update();
+			/*float currentFrame = glfwGetTime();
 			float deltaTime = currentFrame - lastFrame;
-			lastFrame = currentFrame;
+			lastFrame = currentFrame;*/
 
-			InputMapper::GetInstance().Update();
 			//inputManager.Update();
 
 			auto Cam = app.camTest->GetComponent<InputComponent>();
@@ -127,6 +131,7 @@ int main()
 			}
 
 			app.drawFrame(width, height);
+
 
 		}
 
