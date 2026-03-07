@@ -1,5 +1,5 @@
 #pragma once
-#define GLM_ENABLE_EXPERIMENTAL
+#include "glmConfig.h"
 #include "Component.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -7,6 +7,14 @@
 #include "Entity.h"
 #include "input.h"
 #include "InputMapper.h"
+#include "window.h"
+#include "Physics.h"
+#include <glm/gtc/matrix_inverse.hpp>
+#include <glm/ext/matrix_projection.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "EventBus.h"
+#include "EventListener.h"
 
 class TransformComponent : public Component
 {
@@ -58,9 +66,9 @@ public:
 	}
 };
 
-/*class MeshComponent : public Component
+class MeshComponent : public Component
 {
-private:
+/*private:
 	Mesh* mesh = nullptr;
 	Material* material = nullptr;
 public:
@@ -82,8 +90,8 @@ public:
 		material->Bind();
 		material->SetUniform("modelMatrix", transform->GetTransformMatrix());
 		mesh->Render();
-	}
-};*/
+	}*/
+};
 
 class CameraComponent : public Component
 {
@@ -135,6 +143,24 @@ public:
 		}
 		return projectionMatrix;
 	}
+
+	static void BuildMouseRay(double mouseX, double mouseY,int screenW, int screenH,const CameraComponent& cam,const TransformComponent& camTransform,glm::vec3& outOrigin,glm::vec3& outDir)
+	{
+		float x = static_cast<float>(mouseX);
+		float y = static_cast<float>(screenH - mouseY);
+
+		glm::vec4 viewport(0.f, 0.f, static_cast<float>(screenW), static_cast<float>(screenH));
+
+		glm::mat4 view = cam.GetViewMatrix();
+		glm::mat4 proj = cam.GetProjectionMatrix();
+
+		// Vulkan depth: near = 0, far = 1
+		glm::vec3 nearP = glm::unProjectZO(glm::vec3(x, y, 0.0f), view, proj, viewport);
+		glm::vec3 farP = glm::unProjectZO(glm::vec3(x, y, 1.0f), view, proj, viewport);
+
+		outOrigin = camTransform.GetPosition();              
+		outDir = glm::normalize(farP - nearP);
+	}
 };
 
 class CameraControllerComponent : public Component
@@ -184,10 +210,38 @@ public:
 
 class RigidBodyComponent : public Component
 {
-	//physics parameters
+private:
+	std::shared_ptr<Physics::RigidBody> body = nullptr;
+public:
+	void SetRigidBody(const std::shared_ptr<Physics::RigidBody>& rb)
+	{
+		body = rb;
+		if (body && GetOwner())
+		{
+			body->SetOwner(GetOwner());
+		}
+	}
+	std::shared_ptr<Physics::RigidBody> GetRigidBody() const { return body; }
+
+	void Update(float deltatime) override
+	{
+		if (!body) return;
+		auto transform = GetOwner()->GetComponent<TransformComponent>();
+		if (!transform) return;
+		transform->SetPosition(body->GetPosition());
+		transform->SetRotation(body->GetRotation());
+	}
+
+	void OnDestroy() override
+	{
+		body = nullptr; // Let the physics system handle the actual destruction of the rigid body
+	}
 };
 
-class SoundComponent : public Component {};
+class SoundComponent : public Component
+{
+	// base sound parameters
+};
 class SoundEmetteur : public SoundComponent
 {
 	//sound parameters
@@ -226,14 +280,89 @@ public:
 	}
 };
 
-class MouseComponent : public Component {
+class MouseComponent : public Component, public EventListener{
 	//mouse parameters
 public:
+	inline static Physics::PhysicsSystem* s_Physics = nullptr;
+	inline static Window* s_Window = nullptr;
+
+	void MouseInit(Physics::PhysicsSystem* physics, Window* window)
+	{
+		s_Physics = physics;
+		s_Window = window;
+
+		EventBus::Get().AddListener(this);
+	}
+
+	void OnEvent(const Event& event) override
+	{
+		//Handle mouse events if needed
+	}
+
 	void Update(float deltatime) override
 	{
-		if (InputMapper::GetInstance().isButtonPressed("Shoot")) {
-			std::printf("CLICK LEFT (Shoot)\n");
+		if (!InputMapper::GetInstance().isButtonPressed("Shoot")) return;
+		if (!s_Window || !s_Physics) return;
+
+		GLFWwindow* win = InputMapper::GetInstance().m_window;
+
+		//Mouse position in WINDOW coordinates
+		double mxWin = 0.0, myWin = 0.0;
+		glfwGetCursorPos(win, &mxWin, &myWin);
+
+		int winW = 0, winH = 0;
+		glfwGetWindowSize(win, &winW, &winH);
+
+		int fbW = 0, fbH = 0;
+		s_Window->GetFramebufferSize(fbW, fbH);
+
+		if (winW <= 0 || winH <= 0 || fbW <= 0 || fbH <= 0) return;
+
+		//Convert mouse coords -> FRAMEBUFFER coordinates
+		const double sx = static_cast<double>(fbW) / static_cast<double>(winW);
+		const double sy = static_cast<double>(fbH) / static_cast<double>(winH);
+
+		const double mx = mxWin * sx;
+		const double my = myWin * sy;
+
+		auto cam = GetOwner()->GetComponent<CameraComponent>();
+		auto cameraTransform = GetOwner()->GetComponent<TransformComponent>();
+		if (!cam || !cameraTransform) return;
+
+		glm::vec3 origin, direction;
+		CameraComponent::BuildMouseRay(mx, my, fbW, fbH, *cam, *cameraTransform, origin, direction);
+		glm::vec3 forward = cameraTransform->GetRotation() * glm::vec3(0, 0, -1);
+
+		Physics::RaycastHit hit;
+
+		if (s_Physics->Raycast(origin, direction, 1000.0f, hit))
+		{
+			std::printf("HIT dist=%.3f\n", hit.distance);
+			if (hit.body)
+			{
+				Entity* hitEntity = hit.body->GetOwner();
+				if (hitEntity)
+				{
+					HitEvent event(hitEntity);
+					std::printf("Publishing HitEvent\n");
+					EventBus::Get().PublishEvent(event);
+
+				}
+				else
+				{
+					std::printf("Hit a body with no owner entity\n");
+				}
+			}
 		}
+		else
+		{
+			std::printf("Nothing hit\n");
+		}
+	}
+
+	void OnDestroy() override
+	{
+		EventBus::Get().RemoveListener(this);
 	}
 };
 

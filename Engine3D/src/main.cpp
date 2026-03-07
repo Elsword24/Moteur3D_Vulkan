@@ -1,6 +1,10 @@
 #include "Renderer.h"
 #include "BaseComponent.h"
 #include "window.h"
+#include "Physics.h"
+#include "SceneManager.h"
+#include "EntityEventSystem.h"
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "InputMapper.h"
 #include "spline.h"
 
@@ -55,9 +59,15 @@ int main()
 
 		Window window(width, height);
 		HelloTriangleApplication app;
+		Physics::PhysicsSystem m_PhysicsSystem;
+		SceneManager sceneManager(&m_PhysicsSystem);
+		EntityEventSystem entityEventSystem;
 
+		// Set event bus to queue mode for better performance and to avoid issues with events being processed while entities are being destroyed
+		EventBus::Get().SetImmediateMode(false); 
 
-		Entity* camera = new Entity("mainCamera");
+		//Camera
+		Entity* camera = sceneManager.CreateEntity("MainCamera");
 		auto transform = camera->AddComponent<TransformComponent>();
 		camera->AddComponent<CameraComponent>();
 		camera->AddComponent<InputComponent>();
@@ -86,24 +96,51 @@ int main()
 
 		CameraSpline cameraSpline(camera, pointBase, 100);
 
-		//app.initWindow();
+		glfwSetInputMode(window.getGLFWWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-		//window.initWindow();
-
-		input::init(window.getGLFWWindow());
 		auto& inputManager = InputMapper::GetInstance();
 		inputManager.Init(window.getGLFWWindow());
 
-		app.sceneObjects.push_back(std::make_pair(0, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 5.0f))));
-		app.sceneObjects.push_back(std::make_pair(1, glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 0.0f))));
-		app.sceneObjects.push_back(std::make_pair(2, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, -5.0f))));
-		app.sceneObjects.push_back(std::make_pair(3, glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, -10.0f))));
+		MouseComponent::s_Window = &window;
+		MouseComponent::s_Physics = &m_PhysicsSystem;
 
+		//First Entity
+		Entity* cube = sceneManager.CreateEntity("Cube");
+		auto cubeTransform = cube->AddComponent<TransformComponent>();
+		auto cubeRB = cube->AddComponent<RigidBodyComponent>();
+		cubeTransform->SetPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
+		auto rb1 = m_PhysicsSystem.CreateRigidBody();
+		rb1->SetKinematic(true);
+		rb1->SetGravityEnabled(false);
+		rb1->SetPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
+		rb1->SetCollider(std::make_shared<Physics::BoxCollider>(glm::vec3(1.0f)));
+
+		cubeRB->SetRigidBody(rb1);
+
+		//Entity 2 
+
+		Entity* monkey = sceneManager.CreateEntity("Monkey");
+		auto monkeyTransform = monkey->AddComponent<TransformComponent>();
+		auto monkeyRB = monkey->AddComponent<RigidBodyComponent>();
+		monkeyTransform->SetPosition(glm::vec3(2.0f, 0.0f, -2.0f));
+
+		auto rb2 = m_PhysicsSystem.CreateRigidBody();
+		rb2->SetKinematic(true);
+		rb2->SetGravityEnabled(false);
+		rb2->SetPosition(glm::vec3(2.0f, 0.0f, -2.0f));
+		rb2->SetCollider(std::make_shared<Physics::BoxCollider>(glm::vec3(1.0f)));
+
+		monkeyRB->SetRigidBody(rb2);
+
+
+		//Remove this after MeshComponent is done
+		app.sceneObjects.push_back(std::make_pair(0, glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, -2.0f))));
+		app.sceneObjects.push_back(std::make_pair(1, glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f))));
 
 		launchVulkan(app, window, width, height);
+
 		app.camTest = camera;
 
-		//float lastFrame = 0.0f;
 
 		while (!window.WindowClosed())
 		{
@@ -120,6 +157,11 @@ int main()
 			auto CamPos = app.camTest->GetComponent<TransformComponent>();
 			
 
+			//Mouse input is handled in the MouseComponent, so we update it here
+			if (auto mouseInputs = app.camTest->GetComponent<MouseComponent>())
+			{
+				mouseInputs->Update(0.16f);
+			}
 			cameraSpline.Update();
 
 			int width = 0, height = 0;
@@ -132,11 +174,14 @@ int main()
 
 			app.drawFrame(width, height);
 
+			EventBus::Get().ProcessEvent();
+			sceneManager.CleanupDestroyedEntities();
 
 		}
 
 		app.device.waitIdle();
 		window.cleanup();
+		//m_PhysicsSystem.Shutdown();
 	}
 	catch (const std::exception& e)
 	{

@@ -324,7 +324,6 @@ public:
 		queue = vk::raii::Queue(device, queueIndex, 0);
 	}
 
-
 	void createSwapChain(int& width, int& height)
 	{
 		auto surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);
@@ -678,7 +677,6 @@ public:
 
 		auto cam = camTest->GetComponent<CameraComponent>();
 		UniformBufferObject ubo{};
-		//// 
 		//sceneObjects[1].second = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		float aspect = static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height);
