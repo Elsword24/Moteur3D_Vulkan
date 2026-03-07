@@ -58,7 +58,7 @@ public:
 	}
 };
 
-/*class MeshComponent : public Component
+class MeshComponent : public Component
 {
 private:
 	Mesh* mesh = nullptr;
@@ -83,7 +83,7 @@ public:
 		material->SetUniform("modelMatrix", transform->GetTransformMatrix());
 		mesh->Render();
 	}
-};*/
+};
 
 class CameraComponent : public Component
 {

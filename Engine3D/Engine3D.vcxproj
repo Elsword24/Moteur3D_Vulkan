@@ -146,6 +146,7 @@
   <ItemGroup>
     <ClCompile Include="src\API_Vulkan.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MeshComponent.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\window.cpp" />
   </ItemGroup>

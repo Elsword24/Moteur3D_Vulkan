@@ -140,14 +140,14 @@ private:
 	//Dans Renderer
 	static std::vector<char> readFile(const std::string& filename);
 
-	//TODO :
-	// Dans la GameLoop
-	void drawFrame();
+	
 
 public:
 	Renderer(VulkanRAII* ObserverVulkan);
 	~Renderer() = default;
-
+	//TODO :
+	// Dans la GameLoop
+	void drawFrame();
 };
 
 #endif
