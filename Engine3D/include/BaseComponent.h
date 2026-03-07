@@ -274,7 +274,6 @@ public:
 class MouseComponent : public Component, public EventListener{
 	//mouse parameters
 public:
-	// Rendre ces pointeurs statiques inline pour pouvoir les utiliser via MouseComponent::s_Physics / ::s_Window
 	inline static Physics::PhysicsSystem* s_Physics = nullptr;
 	inline static Window* s_Window = nullptr;
 
