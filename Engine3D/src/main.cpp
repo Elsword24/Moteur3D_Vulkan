@@ -49,6 +49,7 @@ void launchVulkan( HelloTriangleApplication& app, Window& window, int& width, in
 int main()
 {
 	
+	
 	try
 	{
 		int width = 800, height = 600;
@@ -67,10 +68,6 @@ int main()
 		frenet repere;
 
 
-		//glm::vec3 p_0 = { -1, 1, 10 };
-		//glm::vec3 p_1 = { 2, 2, 2 };
-		//glm::vec3 p_2 = { 5, 5, 5 };
-		//glm::vec3 p_3 = { 8, 8, 8 };
 		repere.Up = { 0.f,1.f ,0.f };
 
 		std::vector<glm::vec3> pointBase =
@@ -86,9 +83,6 @@ int main()
 
 		CameraSpline cameraSpline(camera, pointBase, 100);
 
-		//app.initWindow();
-
-		//window.initWindow();
 
 		input::init(window.getGLFWWindow());
 		auto& inputManager = InputMapper::GetInstance();
@@ -103,24 +97,26 @@ int main()
 		launchVulkan(app, window, width, height);
 		app.camTest = camera;
 
-		//float lastFrame = 0.0f;
+
+		static auto previous = std::chrono::high_resolution_clock::now();
 
 		while (!window.WindowClosed())
 		{
+
+			auto current = std::chrono::high_resolution_clock::now();
+			auto elapsed = std::chrono::duration<float, std::milli>(current - previous).count();
+
+			previous = current;
+
+
 			window.PollEvent();
 			inputManager.Update();
-			/*float currentFrame = glfwGetTime();
-			float deltaTime = currentFrame - lastFrame;
-			lastFrame = currentFrame;*/
-
-			//inputManager.Update();
-
 			auto Cam = app.camTest->GetComponent<InputComponent>();
-			Cam->Update(0.16f);
+			Cam->Update(elapsed);
 			auto CamPos = app.camTest->GetComponent<TransformComponent>();
 			
 
-			cameraSpline.Update();
+			cameraSpline.Update(elapsed);
 
 			int width = 0, height = 0;
 			window.GetFramebufferSize(width, height);

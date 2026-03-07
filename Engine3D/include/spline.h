@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include "Entity.h"
+#include "BaseComponent.h"
 
 struct frenet
 {
@@ -16,13 +17,15 @@ struct frenet
 };
 
 
+
+
 class CameraSpline
 {
 public:
 
 	CameraSpline(Entity* camera, std::vector<glm::vec3>& pointBase, int pointBeetwen = 10)
 		: m_camera(camera), m_pointBeetwen(pointBeetwen), repere{ {0.f, 1.f, 0.f} }
-	{
+	{  
 		m_transform = m_camera->GetComponent<TransformComponent>();
 		int pointBaseSize = (int)pointBase.size();
 
@@ -48,35 +51,60 @@ public:
 
 	}
 	
-	void Update()
+	void Update(float dt)
 	{
-		static int index = 0;
-		static int direction = 1;
-		static int frameCount = 0;
-		const int frameCountMax = 10;
 
-		frameCount++;
-		if (frameCount >= frameCountMax)
+		float dtSecond = dt / 1000;
+
+		if (m_currentMove == stateMove::WAIT)
 		{
-			frameCount = 0;
-			index += direction;
-
-			if (index >= (int)m_points.size() - 1)
+			m_timerPause += dtSecond;
+			if (m_timerPause >= m_pauseMax)
 			{
-				index = (int)m_points.size() - 1;
-				direction = -1;
+				m_currentMove = stateMove::MOVE;
+				m_timerPause = 0;
+				m_index += m_direction;
 			}
-			else if (index <= 0)
+
+			return;
+		}
+
+		m_timer += dtSecond;
+		
+
+		while (m_timer >= m_timeStep)
+		{
+			m_timer -= m_timeStep;
+			//m_index += m_direction;
+
+			if (m_index % m_pointBeetwen == 0 && m_index != m_lastPoint && m_index != 0)
 			{
-				index = 0;
-				direction = 1;
+				m_currentMove = stateMove::WAIT;
+				m_lastPoint = m_index;
+				m_timer = 0.0f;
+				break;
+			}
+
+			m_index += m_direction;
+
+			if (m_index >= (int)m_points.size() - 1)
+			{
+				m_index = (int)m_points.size() - 1;
+				m_direction = -1;
+				m_lastPoint = -1;
+			}
+			else if (m_index <= 0)
+			{
+				m_index = 0;
+				m_direction = 1;
+				m_lastPoint = -1;
 			}
 		}
 
-		if (!m_points.empty() && index < m_points.size())
+		if (!m_points.empty() && m_index < m_points.size())
 		{
-			glm::vec3 currentPos = m_points[index];
-			glm::vec3 nextPos = m_points[(index + 1) % (int)m_points.size()];
+			glm::vec3 currentPos = m_points[m_index];
+			glm::vec3 nextPos = m_points[(m_index + 1) % (int)m_points.size()];
 			m_transform->SetPosition(currentPos);
 
 			glm::vec3 distVec = nextPos - currentPos;
@@ -140,10 +168,22 @@ private:
 		return p = (2 * cube - 3 * carre + 1) * p1 + (cube - 2 * carre + t) * m0 + (-2 * cube + 3 * carre) * p2 + (cube - carre) * m1;
 	}
 
+	enum class stateMove
+	{
+		MOVE,
+		WAIT
+	};
+
+	stateMove m_currentMove = stateMove::MOVE;
+
 	std::vector<glm::vec3> m_points;
 
 	int m_index = 0;
 	int m_direction = 1;
 	int m_pointBeetwen;
+	int m_lastPoint = -1;
 	float m_timer = 0;
+	float m_timerPause = 0;
+	float m_pauseMax = 5.0f;
+	const float m_timeStep = 0.02;
 };
