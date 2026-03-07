@@ -324,7 +324,6 @@ public:
 		queue = vk::raii::Queue(device, queueIndex, 0);
 	}
 
-
 	void createSwapChain(int& width, int& height)
 	{
 		auto surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);
@@ -368,7 +367,7 @@ public:
 
 	void createGraphicsPipeline()
 	{
-		vk::raii::ShaderModule shaderModule = createShaderModule(readFile("shaders/shader.slang.spv"));
+		vk::raii::ShaderModule shaderModule = createShaderModule(readFile("shaders/slang.spv"));
 
 		vk::PipelineShaderStageCreateInfo vertShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eVertex, .module = shaderModule, .pName = "vertMain" };
 		vk::PipelineShaderStageCreateInfo fragShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eFragment, .module = shaderModule, .pName = "fragMain" };
@@ -669,7 +668,6 @@ public:
 		}
 	}
 
-	///////// faut changer ca aussi!!
 	void updateUniformBuffer(uint32_t currentImage)
 	{
 		static auto startTime = std::chrono::high_resolution_clock::now();
@@ -679,8 +677,7 @@ public:
 
 		auto cam = camTest->GetComponent<CameraComponent>();
 		UniformBufferObject ubo{};
-		//// 
-		sceneObjects[1].second = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		//sceneObjects[1].second = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		float aspect = static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height);
 		cam->SetPerspective(45.0f, aspect, 0.1f, 1000.0f);
