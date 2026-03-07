@@ -144,20 +144,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Physics.cpp" />
-    <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="src\baseComponent.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Physics.cpp" />
+    <ClCompile Include="src\SceneManager.cpp" />
     <ClCompile Include="src\window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EntityEventSystem.h" />
     <ClInclude Include="include\BaseComponent.h" />
     <ClInclude Include="include\Component.h" />
     <ClInclude Include="include\Controler.h" />
     <ClInclude Include="include\Entity.h" />
+    <ClInclude Include="include\EntityEventSystem.h" />
     <ClInclude Include="include\Event.h" />
     <ClInclude Include="include\EventBus.h" />
     <ClInclude Include="include\EventListener.h" />
+    <ClInclude Include="include\glmConfig.h" />
     <ClInclude Include="include\input.h" />
     <ClInclude Include="include\InputMapper.h" />
     <ClInclude Include="include\mesh.h" />
@@ -165,7 +167,6 @@
     <ClInclude Include="include\vertex.h" />
     <ClInclude Include="include\vulkan.h" />
     <ClInclude Include="include\window.h" />
-    <ClInclude Include="SceneManager.h" />
   </ItemGroup>
   <ItemGroup>
     <SlangCompileTask Include="shaders\shader.slang">

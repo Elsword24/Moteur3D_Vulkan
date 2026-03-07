@@ -2,8 +2,8 @@
 #include "BaseComponent.h"
 #include "window.h"
 #include "Physics.h"
-#include "../SceneManager.h"
-#include "../EntityEventSystem.h"
+#include "SceneManager.h"
+#include "EntityEventSystem.h"
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 
