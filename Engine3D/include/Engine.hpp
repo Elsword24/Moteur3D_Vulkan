@@ -54,7 +54,9 @@ public:
 		while (!m_Window->WindowClosed())
 		{
 			m_Window->PollEvent();
+			m_Renderer->drawFrame();
 		}
+		m_Vulkan->GetDevice().waitIdle();
 	}
 
 };
