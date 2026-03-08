@@ -365,7 +365,6 @@ constexpr uint32_t HEIGHT = 600;
 int main()
 {
 	
-	
 	try
 	{
 		EngineQVY Game("RailShooter", WIDTH, HEIGHT);

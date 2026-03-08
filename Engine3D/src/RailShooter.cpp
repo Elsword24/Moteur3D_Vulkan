@@ -12,6 +12,8 @@
 #include "Engine.hpp"
 #include "MeshComponent.h"
 
+
+
 void RailShooter::SettingWorld(SceneManager* scenemanager) 
 {
 	m_scenemanager = scenemanager;
@@ -21,6 +23,7 @@ void RailShooter::SettingWorld(SceneManager* scenemanager)
 	m_Camera->AddComponent<CameraComponent>();
 	m_Camera->AddComponent<InputComponent>();
 	m_Camera->AddComponent<MouseComponent>();
+	transformCamera = m_Camera->GetComponent<TransformComponent>();
 
 	frenet repere;
 	repere.Up = { 0.0f,1.0f,0.0f };
@@ -35,7 +38,6 @@ void RailShooter::SettingWorld(SceneManager* scenemanager)
 					{  0.0f, 3.0f, -15.0f },
 	};
 
-	m_CameraSpline = std::make_unique<CameraSpline>(m_Camera, pointBase, 100);
 
 
 	MouseComponent::s_Window = m_ObserverEngine->GetWindow().get();
@@ -57,7 +59,7 @@ void RailShooter::SettingWorld(SceneManager* scenemanager)
 	//Entity 2 
 	m_monkey = scenemanager->CreateEntity("Monkey");
 	m_monkey->AddComponent<MeshComponent>("Assets/monkey.obj");
-	auto monkeyTransform = m_monkey->AddComponent<TransformComponent>();
+	monkeyTransform = m_monkey->AddComponent<TransformComponent>();
 	auto monkeyRB = m_monkey->AddComponent<RigidBodyComponent>();
 	monkeyTransform->SetPosition(glm::vec3(2.0f, 0.0f, -2.0f));
 	auto rb2 = m_ObserverEngine->GetPhysicSystem()->CreateRigidBody();
@@ -67,32 +69,94 @@ void RailShooter::SettingWorld(SceneManager* scenemanager)
 	rb2->SetCollider(std::make_shared<Physics::BoxCollider>(glm::vec3(1.0f)));
 	monkeyRB->SetRigidBody(rb2);
 
-	//TODO : Jsp se que vous vouliez en faire je le laisse ici
-	// 		//Remove this after MeshComponent is done
-// 		app.sceneObjects.push_back(std::make_pair(0, glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, -2.0f))));
-// 		app.sceneObjects.push_back(std::make_pair(1, glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f))));
-		// 		launchVulkan(app, window, width, height);
+	for (int i = 0; i < 5; ++i)
+	{
+		Entity* enemy = scenemanager->CreateEntity("Enemy " + std::to_string(i));
+		auto mesh = enemy->AddComponent<MeshComponent>("Assets/box.obj");
+		auto transformEnemy = enemy->AddComponent<TransformComponent>();
+		transformEnemy->SetPosition(glm::vec3{i*2,2,-i*3});
+		m_enemies.push_back(enemy);
+	}
 
-// 		app.camTest = camera;
+
+	m_CameraSpline = std::make_unique<CameraSpline>(m_Camera, pointBase, 100);
+
 }
 
-void RailShooter::Update(float elapsed) 
+void RailShooter::Update(float elapsed)
 {
-	// 			auto Cam = app.camTest->GetComponent<InputComponent>();
-// 			Cam->Update(0.16f);
-// 			auto CamPos = app.camTest->GetComponent<TransformComponent>();
-
-		//Mouse input is handled in the MouseComponent, so we update it here
-
-		/*if (auto mouseInputs = app.camTest->GetComponent<MouseComponent>())
-		{
-			mouseInputs->Update(elapsed);
-		}*/
 	m_scenemanager->Update(elapsed);
-	m_CameraSpline->Update();
+	m_CameraSpline->Update(elapsed);
+
+	glm::vec3 camPos = transformCamera->GetPosition();
+	glm::quat camRot = transformCamera->GetRotation();
+	glm::vec3 worldForward = glm::vec3(0.0f, 0.0f, -1.0f);
+	glm::vec3 forward = camRot * worldForward;
+	float distanceDevant = 10.0f;
+	glm::vec3 monkeyPos = camPos + (forward * distanceDevant);
+	monkeyPos.y -= 1.5f;
+
+	monkeyTransform->SetPosition(monkeyPos);
+	monkeyTransform->SetRotation(camRot);
+
+	auto monkeyRB = m_monkey->GetComponent<RigidBodyComponent>();
+	if (monkeyRB && monkeyRB->GetRigidBody()) {
+		monkeyRB->GetRigidBody()->SetPosition(monkeyPos);
+	}
+
+	for (const auto& enemy : m_enemies)
+	{
+		auto enemyRB = enemy->GetComponent<RigidBodyComponent>();
+		if (enemyRB && enemyRB->GetRigidBody()) {
+			enemyRB->GetRigidBody()->SetPosition(monkeyPos);
+		}
+	}
+
+	m_shootTime += (elapsed / 1000);
+	if(m_shootTime >= m_shootFrameRite)
+	{ 
+		m_shootTime = 0.0f;
+		Entity* bulletEntity = m_scenemanager->CreateEntity("Bullet");
+		bulletEntity->AddComponent<MeshComponent>("Assets/box.obj");
+		auto bulletTransform = bulletEntity->AddComponent<TransformComponent>();
+		bulletTransform->SetScale(glm::vec3(0.2f));
+		bulletTransform->SetPosition(monkeyPos);
+
+		Bullet bullet;
+		bullet.bulletEntity = bulletEntity;
+		m_bullets.push_back(bullet);
+
+	}
+
+	for (auto bullet = m_bullets.begin(); bullet!= m_bullets.end();)
+	{
+		bullet->timeLife -= (elapsed / 1000.0f);
+		auto transformBullet = bullet->bulletEntity->GetComponent<TransformComponent>();
+		transformBullet->SetPosition(transformBullet->GetPosition() + (bullet->direction * bullet->speed * (elapsed / 1000.0f)));
+
+		if (bullet->timeLife <= 0.0f)
+		{
+			bullet = m_bullets.erase(bullet);
+		}
+		else
+		{
+			++bullet;
+		}
+	}
+
+
+	for (const auto& bullet : m_bullets)
+	{
+		auto bulletEntity = bullet.bulletEntity;
+		auto bulletRB = bulletEntity->GetComponent<RigidBodyComponent>();
+		if (bulletRB && bulletRB->GetRigidBody()) {
+			bulletRB->GetRigidBody()->SetPosition(monkeyPos);
+		}
+	}
 }
 
 void RailShooter::KillWorld() 
 {
 	m_scenemanager->CleanupDestroyedEntities();
+
 }

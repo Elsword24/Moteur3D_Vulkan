@@ -19,8 +19,6 @@ struct frenet
 };
 
 
-
-
 class CameraSpline
 {
 public:
@@ -68,7 +66,7 @@ public:
 				m_index += m_direction;
 			}
 
-			return;
+			//return;
 		}
 
 		m_timer += dtSecond;
@@ -136,7 +134,6 @@ public:
 			}
 		}
 	}
-
 
 
 	glm::vec3 getCurrentPosition() const
