@@ -4,6 +4,7 @@
 //you can also use bitwise operator to combine categories for an event
 
 class Entity;
+class MeshComponent;
 
 enum class EventCategory
 	: uint16_t
@@ -115,4 +116,22 @@ public:
 	Entity* GetTarget() const { return target; }
 
 	DEFINE_EVENT_TYPE(DestroyEntityEvent, EventCategory::Application);
+};
+
+class MeshCreatedEvent : public Event
+{
+private:
+	MeshComponent* target = nullptr;
+public:
+	explicit MeshCreatedEvent(MeshComponent* targetMeshComponent)
+		:target(targetMeshComponent)
+	{
+	}
+	MeshComponent* GetTarget() const
+	{
+		return target;
+	}
+
+	
+	DEFINE_EVENT_TYPE(MeshCreatedEvent, EventCategory::Application)
 };

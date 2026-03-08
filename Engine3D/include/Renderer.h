@@ -6,6 +6,8 @@
 #include <iostream>
 #include <utility>
 
+#include "EventListener.h"
+
 #define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
 #if defined(__INTELLISENSE__) || !defined(USE_CPP20_MODULES)
 #	include <vulkan/vulkan_raii.hpp>
@@ -18,29 +20,14 @@ import vulkan_hpp;
 #include <glm/gtc/matrix_transform.hpp>
 
 
-//namespace vk
-//{
-//	namespace raii
-//	{
-//		class DescriptorSetLayout;
-//		class PipelineLayout;
-//		class Pipeline;
-//		class Buffer;
-//		class DeviceMemory;
-//		class DescriptorPool;
-//		class DescriptorSet;
-//		class CommandBuffer;
-//		class Semaphore;
-//		class Fence;
-//	}
-//}
-
-//vk::raii::Taa;
 
 class VulkanRAII;
 class Entity;
+class MeshCreatedEvent;
+class MeshComponent;
+struct Vertex;
 
-class Renderer
+class Renderer : public EventListener
 {
 private:
 	VulkanRAII* m_ObserverVulkan = nullptr;
@@ -78,6 +65,8 @@ private:
 	//std::unique_ptr<Camera> camera;
 	Entity* camTest = nullptr;
 	std::vector<std::pair<uint32_t, glm::mat4>> sceneObjects;
+
+	std::vector<MeshComponent*> m_RenderComponent;
 
 private:
 	vk::VertexInputBindingDescription getBindingDescription();
@@ -140,7 +129,15 @@ private:
 	//Dans Renderer
 	static std::vector<char> readFile(const std::string& filename);
 
-	
+
+	void createVertexBuffer(std::vector<Vertex> vertices, vk::raii::Buffer& vertexBuffer, vk::raii::DeviceMemory& vertexBufferMemory);
+
+	void createIndexBuffer(std::vector<uint32_t> indices, vk::raii::Buffer& indexBuffer, vk::raii::DeviceMemory& indexBufferMemory);
+
+
+	void copyBuffer(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size);
+
+	void HandleMeshCreated(MeshComponent* Meshcomponent);
 
 public:
 	Renderer(VulkanRAII* ObserverVulkan);
@@ -148,6 +145,7 @@ public:
 	//TODO :
 	// Dans la GameLoop
 	void drawFrame();
+	void OnEvent(const Event& event) override;
 };
 
 #endif

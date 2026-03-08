@@ -39,17 +39,17 @@ constexpr bool enableValidationLayers = true;
 #endif
 
 
-struct MeshVulkan
-{
-	vk::raii::Buffer vertexBuffer = nullptr;
-	vk::raii::DeviceMemory vertexBufferMemory = nullptr;
-	vk::raii::Buffer indexBuffer = nullptr;
-	vk::raii::DeviceMemory indicesBufferMemory = nullptr;
-	uint32_t index = 0;
-};
-
-
-std::vector<MeshVulkan> meshVulkans;
+//struct MeshVulkan
+//{
+//	vk::raii::Buffer vertexBuffer = nullptr;
+//	vk::raii::DeviceMemory vertexBufferMemory = nullptr;
+//	vk::raii::Buffer indexBuffer = nullptr;
+//	vk::raii::DeviceMemory indicesBufferMemory = nullptr;
+//	uint32_t index = 0;
+//};
+//
+//
+//std::vector<MeshVulkan> meshVulkans;
 
 
 class VulkanRAII
@@ -172,82 +172,6 @@ public:
 	void createImageViews();
 
 	void createCommandPool();
-
-
-	//Dans MeshComponent
-	void createVertexBuffer(std::vector<Vertex> vertices, vk::raii::Buffer& vertexBuffer, vk::raii::DeviceMemory& vertexBufferMemory)
-	{
-		vk::DeviceSize         bufferSize = sizeof(vertices[0]) * vertices.size();
-		vk::raii::Buffer       stagingBuffer({});
-		vk::raii::DeviceMemory stagingBufferMemory({});
-
-		createBuffer
-		(
-			bufferSize,
-			vk::BufferUsageFlagBits::eTransferSrc,
-			vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-			stagingBuffer,
-			stagingBufferMemory
-		); 
-
-		void* dataStaging = stagingBufferMemory.mapMemory(0, bufferSize);
-		memcpy(dataStaging, vertices.data(), bufferSize);
-		stagingBufferMemory.unmapMemory();
-
-		createBuffer
-		(
-			bufferSize,
-			vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
-			vk::MemoryPropertyFlagBits::eDeviceLocal,
-			vertexBuffer, 
-			vertexBufferMemory
-		);
-
-		copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-
-	}
-
-	//Dans MeshComponent
-	void createIndexBuffer(std::vector<uint32_t> indices, vk::raii::Buffer& indexBuffer, vk::raii::DeviceMemory& indexBufferMemory)
-	{
-		vk::DeviceSize bufferSize = sizeof(indices[0]) * indices.size();
-		vk::raii::Buffer       stagingBuffer({});
-		vk::raii::DeviceMemory stagingBufferMemory({});
-		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
-
-		void* data = stagingBufferMemory.mapMemory(0, bufferSize);
-		memcpy(data, indices.data(), (size_t)bufferSize);
-		stagingBufferMemory.unmapMemory();
-
-		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, indexBuffer, indexBufferMemory);
-
-		copyBuffer(stagingBuffer, indexBuffer, bufferSize);
-	}
-
-	
-
-	//Dans MeshComponent
-	void copyBuffer(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size)
-	{
-		vk::CommandBufferAllocateInfo allocInfo
-		{ 
-			.commandPool = commandPool,
-			.level = vk::CommandBufferLevel::ePrimary,
-			.commandBufferCount = 1 
-		};
-		vk::raii::CommandBuffer       commandCopyBuffer = std::move(device.allocateCommandBuffers(allocInfo).front());
-		commandCopyBuffer.begin(vk::CommandBufferBeginInfo{ .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit });
-		commandCopyBuffer.copyBuffer(*srcBuffer, *dstBuffer, vk::BufferCopy(0, 0, size));
-		commandCopyBuffer.end();
-		queue.submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &*commandCopyBuffer }, nullptr);
-		queue.waitIdle();
-	}
-
-	
-	
-
-	
-
 };
 
 #endif
