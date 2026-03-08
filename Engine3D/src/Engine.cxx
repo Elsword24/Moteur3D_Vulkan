@@ -50,6 +50,7 @@ EngineQVY::EngineQVY(const char* Title, uint32_t Width, uint32_t Height)
 
 	m_RailShooter = std::make_unique<RailShooter>(this);
 	m_RailShooter->SettingWorld(m_SceneManager.get());
+	EventBus::Get().ProcessEvent();
 }
 
 void EngineQVY::RunGameLoop()
@@ -64,10 +65,10 @@ void EngineQVY::RunGameLoop()
 		m_inputManager.Update();
 
 		m_RailShooter->Update(elapsed);
-
+		EventBus::Get().ProcessEvent();
 		m_Renderer->drawFrame();
 
-		EventBus::Get().ProcessEvent();
+		
 		m_RailShooter->KillWorld();
 	}
 	m_Vulkan->GetDevice().waitIdle();
