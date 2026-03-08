@@ -81,6 +81,16 @@ private:
 	mutable bool projectionDirty = true;
 
 public:
+	CameraComponent()
+	{
+		CameraSetEvent event(this);
+		EventBus::Get().PublishEvent(event);
+	}
+	void OnDestroy() override
+	{
+		CameraRemoveEvent event(this);
+		EventBus::Get().PublishEvent(event);
+	}
 	void SetPerspective(float fov, float aspect, float Near, float Far)
 	{
 		fieldOfView = fov;

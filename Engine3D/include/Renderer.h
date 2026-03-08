@@ -8,6 +8,7 @@
 
 
 
+
 #define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
 #if defined(__INTELLISENSE__) || !defined(USE_CPP20_MODULES)
 #	include <vulkan/vulkan_raii.hpp>
@@ -25,6 +26,7 @@ import vulkan_hpp;
 class VulkanRAII;
 class Entity;
 class MeshComponent;
+class CameraComponent;
 struct Vertex;
 
 class Renderer : public EventListener
@@ -62,12 +64,11 @@ private:
 	//Dans Renderer
 	bool framebufferResized = false;
 private:
-	//std::unique_ptr<Camera> camera;
-	Entity* camTest = nullptr;
-	std::vector<std::pair<uint32_t, glm::mat4>> sceneObjects;
+	
+	//std::vector<std::pair<uint32_t, glm::mat4>> sceneObjects;
 
 	std::vector<MeshComponent*> m_RenderComponent;
-
+	CameraComponent* m_activeCamera = nullptr;
 private:
 	vk::VertexInputBindingDescription getBindingDescription();
 
@@ -139,6 +140,10 @@ private:
 
 	void HandleMeshCreated(MeshComponent* Mesh);
 	void HandleMeshDestroy(MeshComponent* Mesh);
+
+	void HandleCameraSet(CameraComponent* Camera);
+
+	void HandleCameraRemove(CameraComponent* Camera);
 
 public:
 	Renderer(VulkanRAII* ObserverVulkan);

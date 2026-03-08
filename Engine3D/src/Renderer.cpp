@@ -10,6 +10,7 @@
 #include "EventBus.h"
 #include "MeshComponent.h"
 
+
 vk::VertexInputBindingDescription Renderer::getBindingDescription()
 {
 	return vk::VertexInputBindingDescription
@@ -363,18 +364,22 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
 	auto  currentTime = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration<float>(currentTime - startTime).count();
 
-	auto cam = camTest->GetComponent<CameraComponent>();
+	
 	UniformBufferObject ubo{};
-	sceneObjects[1].second = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	//sceneObjects[1].second = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	float aspect = static_cast<float>(m_ObserverVulkan->GetSwapChainExtent().width) / static_cast<float>(m_ObserverVulkan->GetSwapChainExtent().height);
-	cam->SetPerspective(45.0f, aspect, 0.1f, 1000.0f);
+	if (m_activeCamera)
+	{
+		m_activeCamera->SetPerspective(45.0f, aspect, 0.1f, 1000.0f);
 
-	ubo.view = cam->GetViewMatrix();
-	ubo.proj = cam->GetProjectionMatrix();
+		ubo.view = m_activeCamera->GetViewMatrix();
+		ubo.proj = m_activeCamera->GetProjectionMatrix();
+		ubo.proj[1][1] *= -1;
+	}
 
 	//TODO : A METRRE DANS UN LIGHTCOMPONENT 
-	ubo.proj[1][1] *= -1;
+	
 
 	ubo.light.posWorld = { 0.0f,2.0f,0.0f };
 	ubo.light.color = { 1.0f,1.0f,1.0f };
@@ -563,6 +568,17 @@ void Renderer::HandleMeshDestroy(MeshComponent* Mesh)
 	);
 }
 
+void Renderer::HandleCameraSet(CameraComponent* Camera)
+{
+	m_activeCamera = Camera;
+}
+
+void Renderer::HandleCameraRemove(CameraComponent* Camera)
+{
+	m_activeCamera = nullptr;
+}
+
+
 Renderer::Renderer(VulkanRAII* ObserverVulkan)
 	:m_ObserverVulkan(ObserverVulkan)
 {
@@ -590,6 +606,18 @@ void Renderer::OnEvent(const Event& event)
 	dispatcher.Dispatch<MeshDestroyEvent>([this](const MeshDestroyEvent& e)
 		{
 			HandleMeshDestroy(e.GetTarget());
+		}
+	);
+
+	dispatcher.Dispatch<CameraSetEvent>([this](const CameraSetEvent& e)
+		{
+			HandleCameraSet(e.GetTarget());
+		}
+	);
+
+	dispatcher.Dispatch<CameraRemoveEvent>([this](const CameraRemoveEvent& e)
+		{
+			HandleCameraRemove(e.GetTarget());
 		}
 	);
 }

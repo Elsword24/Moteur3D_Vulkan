@@ -5,6 +5,7 @@
 
 class Entity;
 class MeshComponent;
+class CameraComponent;
 
 enum class EventCategory
 	: uint16_t
@@ -152,4 +153,40 @@ public:
 
 
 	DEFINE_EVENT_TYPE(MeshDestroyEvent, EventCategory::Application)
+};
+
+class CameraSetEvent : public Event
+{
+private:
+	CameraComponent* target = nullptr;
+public:
+	explicit CameraSetEvent(CameraComponent* targetCameraComponent)
+		:target(targetCameraComponent)
+	{
+	}
+	CameraComponent* GetTarget() const
+	{
+		return target;
+	}
+
+
+	DEFINE_EVENT_TYPE(CameraSetEvent, EventCategory::Application)
+};
+
+class CameraRemoveEvent : public Event
+{
+private:
+	CameraComponent* target = nullptr;
+public:
+	explicit CameraRemoveEvent(CameraComponent* targetCameraComponent)
+		:target(targetCameraComponent)
+	{
+	}
+	CameraComponent* GetTarget() const
+	{
+		return target;
+	}
+
+
+	DEFINE_EVENT_TYPE(CameraRemoveEvent, EventCategory::Application)
 };
