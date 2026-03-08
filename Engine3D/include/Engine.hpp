@@ -12,12 +12,6 @@
 #include "SceneManager.h"
 #include "EntityEventSystem.h"
 
-//class Window;
-//class VulkanRAII;
-//class Renderer;
-//class SceneManager;
-//class EntityEventSystem;
-//class RailShooter;
 
 namespace Physics
 {
@@ -35,6 +29,8 @@ private:
 	std::unique_ptr<SceneManager> m_SceneManager;
 	std::unique_ptr<EntityEventSystem> m_EntityEventSystem;
 	std::unique_ptr<RailShooter> m_RailShooter;
+
+private:
 	void SettingVulkan(const char* Title);
 
 public:

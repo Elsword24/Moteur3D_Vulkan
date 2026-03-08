@@ -4,13 +4,14 @@
 
 
 #include <memory>
+
 #include "spline.h"
 
 class Entity;
 class EngineQVY;
 class SceneManager;
 
-//class CameraSpline;
+
 
 class IWorld
 {
@@ -38,8 +39,7 @@ private:
 public:
 	RailShooter(EngineQVY* observerEngine)
 		:m_ObserverEngine(observerEngine)
-	{
-	}
+	{}
 
 	~RailShooter() = default;
 

@@ -15,15 +15,6 @@ void EngineQVY::SettingVulkan(const char* Title)
 	m_Vulkan->createSwapChain();
 	m_Vulkan->createImageViews();
 	m_Vulkan->createCommandPool();
-
-	//TODO: A ranger dans Renderer
-	/*m_Vulkan->createDescriptorSetLayout();
-		m_Vulkan->createGraphicsPipeline();*/
-
-	//TODO: A Ranger dans MeshComponent
-	/*m_Vulkan->createVertexBuffer();
-		m_Vulkan->createIndexBuffer();*/
-
 }
 
 EngineQVY::EngineQVY(const char* Title, uint32_t Width, uint32_t Height)

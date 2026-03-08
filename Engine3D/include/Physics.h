@@ -5,8 +5,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-//namespace Engine
-//{
 
 class Entity;
 	namespace Physics
@@ -159,12 +157,6 @@ class Entity;
 		class PhysicsSystem
 		{
 		public:
-			//PhysicsSystem();
-			//~PhysicsSystem();
-
-			//void Initialize();
-			//void Shutdown();
-
 			//Update physics simulation
 			void Update(float deltaTime);
 
@@ -197,7 +189,6 @@ class Entity;
 			bool CheckCollisions(const RigidBody& bodyA, const RigidBody& bodyB, CollisionInfo& collision);
 			bool SphereVSSphere(const RigidBody& bodyA, const RigidBody& bodyB, CollisionInfo& collision);
 			bool BoxVSBox(const RigidBody& bodyA, const RigidBody& bodyB, CollisionInfo& collision);
-			//bool SphereVSBox(const RigidBody& bodyA, const RigidBody& bodyB, CollisionInfo& collision);
 		};
 
 		struct RaycastHit
@@ -208,5 +199,4 @@ class Entity;
 			std::shared_ptr<RigidBody> body;
 		};
 	}
-	
-//}
+
