@@ -66,7 +66,7 @@ public:
 				m_index += m_direction;
 			}
 
-			//return;
+			return;
 		}
 
 		m_timer += dtSecond;
@@ -77,7 +77,7 @@ public:
 			m_timer -= m_timeStep;
 			//m_index += m_direction;
 
-			if (m_index % m_pointBeetwen == 0 && m_index != m_lastPoint && m_index != 0)
+			if (m_index % (m_pointBeetwen * 5) == 0 && m_index != m_lastPoint && m_index != 0)
 			{
 				m_currentMove = stateMove::WAIT;
 				m_lastPoint = m_index;

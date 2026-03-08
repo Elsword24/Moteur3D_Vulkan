@@ -27,15 +27,20 @@ void RailShooter::SettingWorld(SceneManager* scenemanager)
 
 	frenet repere;
 	repere.Up = { 0.0f,1.0f,0.0f };
-	std::vector<glm::vec3> pointBase =
-	{
-		{  0.0f, 1.0f,  15.0f },
-					{ -4.0f, 1.0f,  10.0f },
-					{  4.0f, 1.5f,   5.0f },
-					{ -3.0f, 2.0f,   0.0f },
-					{  3.0f, 1.5f,  -5.0f },
-					{ -4.0f, 2.5f, -10.0f },
-					{  0.0f, 3.0f, -15.0f },
+
+	std::vector<glm::vec3> pointBase = {
+		{  0.0f, 1.0f,  7.0f },
+		{  0.0f, 1.0f,  5.0f },
+		{ -1.0f, 1.0f,  2.5f },
+		{ -2.0f, 1.0f,  0.0f },
+		{ -1.0f, 1.0f, -2.5f },
+		{  1.0f, 1.0f, -4.0f },
+		{  2.0f, 1.0f, -5.5f },
+		{  1.0f, 1.0f, -6.5f },
+		{  0.0f, 1.0f, -7.0f },
+		{ -0.5f, 1.0f, -7.5f },
+		{  0.0f, 1.0f, -7.5f },
+		{  0.0f, 1.0f, -7.5f }
 	};
 
 
@@ -43,18 +48,14 @@ void RailShooter::SettingWorld(SceneManager* scenemanager)
 	MouseComponent::s_Window = m_ObserverEngine->GetWindow().get();
 	MouseComponent::s_Physics = m_ObserverEngine->GetPhysicSystem().get();
 
-	//First Entity
-	m_cube = scenemanager->CreateEntity("Cube");
-	m_cube->AddComponent<MeshComponent>("Assets/box.obj");
-	auto cubeTransform = m_cube->AddComponent<TransformComponent>();
-	auto cubeRB = m_cube->AddComponent<RigidBodyComponent>();
-	cubeTransform->SetPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
-	auto rb1 = m_ObserverEngine->GetPhysicSystem()->CreateRigidBody();
-	rb1->SetKinematic(true);
-	rb1->SetGravityEnabled(false);
-	rb1->SetPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
-	rb1->SetCollider(std::make_shared<Physics::BoxCollider>(glm::vec3(1.0f)));
-	cubeRB->SetRigidBody(rb1);
+
+	m_sol = scenemanager->CreateEntity("Cube");
+	m_sol->AddComponent<MeshComponent>("Assets/box.obj");
+	auto solTransform = m_sol->AddComponent<TransformComponent>();
+	solTransform->SetPosition(glm::vec3(0,0,0));
+	solTransform->SetScale(glm::vec3(15,0.5,15));
+
+
 
 	//Entity 2 
 	m_monkey = scenemanager->CreateEntity("Monkey");
@@ -69,14 +70,14 @@ void RailShooter::SettingWorld(SceneManager* scenemanager)
 	rb2->SetCollider(std::make_shared<Physics::BoxCollider>(glm::vec3(1.0f)));
 	monkeyRB->SetRigidBody(rb2);
 
-	for (int i = 0; i < 5; ++i)
-	{
-		Entity* enemy = scenemanager->CreateEntity("Enemy " + std::to_string(i));
-		auto mesh = enemy->AddComponent<MeshComponent>("Assets/box.obj");
-		auto transformEnemy = enemy->AddComponent<TransformComponent>();
-		transformEnemy->SetPosition(glm::vec3{i*2,2,-i*3});
-		m_enemies.push_back(enemy);
-	}
+	//for (int i = 0; i < 5; ++i)
+	//{
+	//	Entity* enemy = scenemanager->CreateEntity("Enemy " + std::to_string(i));
+	//	auto mesh = enemy->AddComponent<MeshComponent>("Assets/box.obj");
+	//	auto transformEnemy = enemy->AddComponent<TransformComponent>();
+	//	transformEnemy->SetPosition(glm::vec3{i*2,2,-i*3});
+	//	m_enemies.push_back(enemy);
+	//}
 
 
 	m_CameraSpline = std::make_unique<CameraSpline>(m_Camera, pointBase, 100);
@@ -109,48 +110,6 @@ void RailShooter::Update(float elapsed)
 		auto enemyRB = enemy->GetComponent<RigidBodyComponent>();
 		if (enemyRB && enemyRB->GetRigidBody()) {
 			enemyRB->GetRigidBody()->SetPosition(monkeyPos);
-		}
-	}
-
-	m_shootTime += (elapsed / 1000);
-	if(m_shootTime >= m_shootFrameRite)
-	{ 
-		m_shootTime = 0.0f;
-		Entity* bulletEntity = m_scenemanager->CreateEntity("Bullet");
-		bulletEntity->AddComponent<MeshComponent>("Assets/box.obj");
-		auto bulletTransform = bulletEntity->AddComponent<TransformComponent>();
-		bulletTransform->SetScale(glm::vec3(0.2f));
-		bulletTransform->SetPosition(monkeyPos);
-
-		Bullet bullet;
-		bullet.bulletEntity = bulletEntity;
-		m_bullets.push_back(bullet);
-
-	}
-
-	for (auto bullet = m_bullets.begin(); bullet!= m_bullets.end();)
-	{
-		bullet->timeLife -= (elapsed / 1000.0f);
-		auto transformBullet = bullet->bulletEntity->GetComponent<TransformComponent>();
-		transformBullet->SetPosition(transformBullet->GetPosition() + (bullet->direction * bullet->speed * (elapsed / 1000.0f)));
-
-		if (bullet->timeLife <= 0.0f)
-		{
-			bullet = m_bullets.erase(bullet);
-		}
-		else
-		{
-			++bullet;
-		}
-	}
-
-
-	for (const auto& bullet : m_bullets)
-	{
-		auto bulletEntity = bullet.bulletEntity;
-		auto bulletRB = bulletEntity->GetComponent<RigidBodyComponent>();
-		if (bulletRB && bulletRB->GetRigidBody()) {
-			bulletRB->GetRigidBody()->SetPosition(monkeyPos);
 		}
 	}
 }

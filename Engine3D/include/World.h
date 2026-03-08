@@ -28,22 +28,14 @@ public:
 
 
 
-
 class RailShooter : public IWorld
 {
 private:
-	struct Bullet
-	{
-		Entity* bulletEntity;
-		glm::vec3 direction;
-		float speed = 30.0f;
-		float timeLife = 2.5f;
-	};
 
 	int nbrBulletMax = 100;
 	Entity* m_cube = nullptr;
+	Entity* m_sol = nullptr;
 	std::vector<Entity*> m_enemies;
-	std::vector<Bullet> m_bullets;
 	Entity* m_Camera = nullptr;
 	Entity* m_monkey = nullptr;
 	TransformComponent* transformCamera;
