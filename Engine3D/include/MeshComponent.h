@@ -17,7 +17,7 @@ import vulkan_hpp;
 class Mesh;
 struct Vertex;
 
-class MeshComponent : public Component, public EventListener
+class MeshComponent : public Component
 {
 private:
 	std::vector<Vertex> m_vertices;

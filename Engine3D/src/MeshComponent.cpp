@@ -23,8 +23,6 @@ void MeshComponent::OnDestroy()
 {
 	MeshDestroyEvent event(this);
 	EventBus::Get().PublishEvent(event);
-
-	EventBus::Get().RemoveListener(this);
 }
 
 vk::raii::DeviceMemory& MeshComponent::GetIndexBufferMemory()
