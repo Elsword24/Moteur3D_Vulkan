@@ -145,7 +145,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\API_Vulkan.cpp" />
-    <ClCompile Include="src\baseComponent.cpp" />
     <ClCompile Include="src\Engine.cxx" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MeshComponent.cpp" />

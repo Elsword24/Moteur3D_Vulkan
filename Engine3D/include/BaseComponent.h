@@ -81,7 +81,7 @@ private:
 	mutable bool projectionDirty = true;
 
 public:
-	CameraComponent()
+	void OnInitialize() override
 	{
 		CameraSetEvent event(this);
 		EventBus::Get().PublishEvent(event);
@@ -291,8 +291,10 @@ public:
 	{
 		if (!InputMapper::GetInstance().isButtonPressed("Shoot")) return;
 		if (!s_Window || !s_Physics) return;
-
 		GLFWwindow* win = InputMapper::GetInstance().m_window;
+
+		std::printf("[MouseComponent] Update called\n");
+
 
 		//Mouse position in WINDOW coordinates
 		double mxWin = 0.0, myWin = 0.0;

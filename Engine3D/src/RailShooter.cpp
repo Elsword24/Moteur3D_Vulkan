@@ -19,7 +19,6 @@ void RailShooter::SettingWorld(SceneManager* scenemanager)
 	m_Camera = scenemanager->CreateEntity("MainCamera");
 	auto transform = m_Camera->AddComponent<TransformComponent>();
 	m_Camera->AddComponent<CameraComponent>();
-	m_Camera->AddComponent<InputComponent>();
 	m_Camera->AddComponent<MouseComponent>();
 
 	frenet repere;
@@ -66,33 +65,19 @@ void RailShooter::SettingWorld(SceneManager* scenemanager)
 	rb2->SetPosition(glm::vec3(2.0f, 0.0f, -2.0f));
 	rb2->SetCollider(std::make_shared<Physics::BoxCollider>(glm::vec3(1.0f)));
 	monkeyRB->SetRigidBody(rb2);
-
-	//TODO : Jsp se que vous vouliez en faire je le laisse ici
-	// 		//Remove this after MeshComponent is done
-// 		app.sceneObjects.push_back(std::make_pair(0, glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, -2.0f))));
-// 		app.sceneObjects.push_back(std::make_pair(1, glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f))));
-		// 		launchVulkan(app, window, width, height);
-
-// 		app.camTest = camera;
 }
 
 void RailShooter::Update(float elapsed) 
 {
-	// 			auto Cam = app.camTest->GetComponent<InputComponent>();
-// 			Cam->Update(0.16f);
-// 			auto CamPos = app.camTest->GetComponent<TransformComponent>();
-
-		//Mouse input is handled in the MouseComponent, so we update it here
-
-		/*if (auto mouseInputs = app.camTest->GetComponent<MouseComponent>())
-		{
-			mouseInputs->Update(elapsed);
-		}*/
-	m_scenemanager->Update(elapsed);
 	m_CameraSpline->Update();
+	m_scenemanager->Update(elapsed);
 }
 
-void RailShooter::KillWorld() 
+void RailShooter::Cleanup() 
 {
+	if (m_ObserverEngine && m_ObserverEngine->GetVulkan())
+	{
+		m_ObserverEngine->GetVulkan()->GetDevice().waitIdle();
+	}
 	m_scenemanager->CleanupDestroyedEntities();
 }

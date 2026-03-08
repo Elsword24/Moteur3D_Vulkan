@@ -38,19 +38,16 @@ EngineQVY::EngineQVY(const char* Title, uint32_t Width, uint32_t Height)
 	m_SceneManager = std::make_unique<SceneManager>(m_Physics.get());
 
 	// Set event bus to queue mode for better performance and to avoid issues with events being processed while entities are being destroyed
-	EventBus::Get().SetImmediateMode(false);
+	EventBus::Get().SetImmediateMode(true);
 
 
 	m_Renderer = std::make_unique<Renderer>(m_Vulkan.get());
 
 	glfwSetInputMode(m_Window.get()->getGLFWWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-	m_inputManager = InputMapper::GetInstance();
-	m_inputManager.Init(m_Window.get()->getGLFWWindow());
-
+	InputMapper::GetInstance().Init(m_Window.get()->getGLFWWindow());
 	m_RailShooter = std::make_unique<RailShooter>(this);
 	m_RailShooter->SettingWorld(m_SceneManager.get());
-	EventBus::Get().ProcessEvent();
 }
 
 void EngineQVY::RunGameLoop()
@@ -61,15 +58,13 @@ void EngineQVY::RunGameLoop()
 		auto current = std::chrono::high_resolution_clock::now();
 		auto elapsed = std::chrono::duration<float, std::milli>(current - previous).count();
 		previous = current;
+
 		m_Window->PollEvent();
-		m_inputManager.Update();
+		InputMapper::GetInstance().Update();
 
 		m_RailShooter->Update(elapsed);
-		EventBus::Get().ProcessEvent();
 		m_Renderer->drawFrame();
-
-		
-		m_RailShooter->KillWorld();
+		m_RailShooter->Cleanup();
 	}
 	m_Vulkan->GetDevice().waitIdle();
 	m_Window->cleanup();
@@ -83,4 +78,9 @@ const std::unique_ptr<Physics::PhysicsSystem>& EngineQVY::GetPhysicSystem() cons
 const std::unique_ptr<Window>& EngineQVY::GetWindow() const
 {
 	return m_Window;
+}
+
+const std::unique_ptr<VulkanRAII>& EngineQVY::GetVulkan() const
+{
+	return m_Vulkan;
 }

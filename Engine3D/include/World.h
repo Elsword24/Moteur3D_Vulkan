@@ -22,7 +22,7 @@ public:
 
 	virtual void SettingWorld(SceneManager *scenemanager) = 0;
 	virtual void Update(float elapsed) = 0;
-	virtual void KillWorld() = 0;
+	virtual void Cleanup() = 0;
 };
 
 class RailShooter : public IWorld
@@ -47,7 +47,7 @@ public:
 
 	void Update(float elapsed) override;
 
-	void KillWorld() override;
+	void Cleanup() override;
 };
 
 #endif

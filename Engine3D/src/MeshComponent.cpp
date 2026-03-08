@@ -1,6 +1,5 @@
 #include "MeshComponent.h"
 
-
 #include "mesh.h"
 #include "Event.h"
 #include "EventBus.h"
@@ -14,9 +13,6 @@ MeshComponent::MeshComponent(const std::string& path)
 	m_indices.reserve(mesh.GetIndices().capacity());
 	m_vertices = std::move(mesh.GetVertices());
 	m_indices = std::move(mesh.GetIndices());
-
-	MeshCreatedEvent event(this);
-	EventBus::Get().PublishEvent(event);
 }
 
 void MeshComponent::OnDestroy()
@@ -53,6 +49,12 @@ const std::vector<uint32_t>& MeshComponent::GetIndices() const
 const std::vector<Vertex>& MeshComponent::GetVertices() const
 {
 	return m_vertices;
+}
+
+void MeshComponent::OnInitialize()
+{
+	MeshCreatedEvent event(this);
+	EventBus::Get().PublishEvent(event);
 }
 
 

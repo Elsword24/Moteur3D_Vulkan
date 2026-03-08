@@ -34,15 +34,13 @@ private:
 	std::unique_ptr<Physics::PhysicsSystem> m_Physics;
 	std::unique_ptr<SceneManager> m_SceneManager;
 	std::unique_ptr<EntityEventSystem> m_EntityEventSystem;
-	InputMapper m_inputManager;
 	std::unique_ptr<RailShooter> m_RailShooter;
-
-	
-
-private:
 	void SettingVulkan(const char* Title);
 
 public:
+	const std::unique_ptr<VulkanRAII>& GetVulkan() const;
+
+
 	EngineQVY(const char* Title, uint32_t Width, uint32_t Height);
 	~EngineQVY() = default;
 
