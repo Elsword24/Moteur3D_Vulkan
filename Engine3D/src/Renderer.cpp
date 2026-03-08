@@ -373,7 +373,7 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
 	ubo.view = cam->GetViewMatrix();
 	ubo.proj = cam->GetProjectionMatrix();
 
-
+	//TODO : A METRRE DANS UN LIGHTCOMPONENT 
 	ubo.proj[1][1] *= -1;
 
 	ubo.light.posWorld = { 0.0f,2.0f,0.0f };
@@ -548,9 +548,32 @@ void Renderer::HandleMeshCreated(MeshComponent* Mesh)
 	m_RenderComponent.push_back(Mesh);
 }
 
+void Renderer::HandleMeshDestroy(MeshComponent* Mesh)
+{
+	m_RenderComponent.erase
+	(
+		std::remove_if
+		(
+			m_RenderComponent.begin(), m_RenderComponent.end(),[&](const MeshComponent* mesh)
+			{
+				return mesh == Mesh;
+			}
+		),
+		m_RenderComponent.end()
+	);
+}
+
 Renderer::Renderer(VulkanRAII* ObserverVulkan)
 	:m_ObserverVulkan(ObserverVulkan)
 {
+	createDescriptorSetLayout();
+	createGraphicsPipeline();
+	createUniformBuffers();
+	createDescriptorPool();
+	createDescriptorSets();
+	createCommandBuffers();
+	createSyncObjects();
+
 	EventBus::Get().AddListener(this, EventCategory::Application, 0);
 }
 
@@ -559,8 +582,14 @@ void Renderer::OnEvent(const Event& event)
 	EventDispatcher dispatcher(event);
 
 	dispatcher.Dispatch<MeshCreatedEvent>([this](const MeshCreatedEvent& e)
-	{
+		{
 			HandleMeshCreated(e.GetTarget());
-	}
+		}
+	);
+
+	dispatcher.Dispatch<MeshDestroyEvent>([this](const MeshDestroyEvent& e)
+		{
+			HandleMeshDestroy(e.GetTarget());
+		}
 	);
 }

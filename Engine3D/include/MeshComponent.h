@@ -12,12 +12,12 @@ import vulkan_hpp;
 #endif
 
 #include "Component.h"
+#include "EventListener.h"
 
 class Mesh;
 struct Vertex;
-class MeshCreatedEvent;
 
-class MeshComponent : public Component
+class MeshComponent : public Component, public EventListener
 {
 private:
 	std::vector<Vertex> m_vertices;
@@ -31,7 +31,8 @@ private:
 
 public:
 	MeshComponent(const std::string& path);
-	~MeshComponent() = default;
+	
+	void OnDestroy() override;
 
 	const std::vector<Vertex>& GetVertices() const;
 

@@ -135,3 +135,21 @@ public:
 	
 	DEFINE_EVENT_TYPE(MeshCreatedEvent, EventCategory::Application)
 };
+
+class MeshDestroyEvent : public Event
+{
+private:
+	MeshComponent* target = nullptr;
+public:
+	explicit MeshDestroyEvent(MeshComponent* targetMeshComponent)
+		:target(targetMeshComponent)
+	{
+	}
+	MeshComponent* GetTarget() const
+	{
+		return target;
+	}
+
+
+	DEFINE_EVENT_TYPE(MeshDestroyEvent, EventCategory::Application)
+};

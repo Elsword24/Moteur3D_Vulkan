@@ -19,6 +19,14 @@ MeshComponent::MeshComponent(const std::string& path)
 	EventBus::Get().PublishEvent(event);
 }
 
+void MeshComponent::OnDestroy()
+{
+	MeshDestroyEvent event(this);
+	EventBus::Get().PublishEvent(event);
+
+	EventBus::Get().RemoveListener(this);
+}
+
 vk::raii::DeviceMemory& MeshComponent::GetIndexBufferMemory()
 {
 	return m_IndexBufferMemory;

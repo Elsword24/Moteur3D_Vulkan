@@ -6,7 +6,7 @@
 #include <iostream>
 #include <utility>
 
-#include "EventListener.h"
+
 
 #define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
 #if defined(__INTELLISENSE__) || !defined(USE_CPP20_MODULES)
@@ -19,11 +19,11 @@ import vulkan_hpp;
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "EventListener.h"
 
 
 class VulkanRAII;
 class Entity;
-class MeshCreatedEvent;
 class MeshComponent;
 struct Vertex;
 
@@ -137,7 +137,8 @@ private:
 
 	void copyBuffer(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size);
 
-	void HandleMeshCreated(MeshComponent* Meshcomponent);
+	void HandleMeshCreated(MeshComponent* Mesh);
+	void HandleMeshDestroy(MeshComponent* Mesh);
 
 public:
 	Renderer(VulkanRAII* ObserverVulkan);
