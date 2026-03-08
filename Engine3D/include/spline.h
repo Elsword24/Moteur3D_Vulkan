@@ -54,11 +54,10 @@ public:
 	void Update(float dt)
 	{
 
-		float dtSecond = dt / 1000;
 
 		if (m_currentMove == stateMove::WAIT)
 		{
-			m_timerPause += dtSecond;
+			m_timerPause += dt;
 			if (m_timerPause >= m_pauseMax)
 			{
 				m_currentMove = stateMove::MOVE;
@@ -69,7 +68,7 @@ public:
 			return;
 		}
 
-		m_timer += dtSecond;
+		m_timer += dt;
 		
 
 		while (m_timer >= m_timeStep)

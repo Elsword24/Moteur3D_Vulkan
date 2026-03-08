@@ -38,9 +38,7 @@ private:
 	Entity* m_sol = nullptr;
 	std::vector<Entity*> m_enemies;
 	Entity* m_Camera = nullptr;
-	Entity* m_monkey = nullptr;
 	TransformComponent* transformCamera;
-	TransformComponent* monkeyTransform;
 	EngineQVY* m_ObserverEngine = nullptr;
 	SceneManager* m_scenemanager = nullptr;
 	std::unique_ptr<CameraSpline> m_CameraSpline;
