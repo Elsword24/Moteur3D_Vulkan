@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <rapidobj.hpp>
 #include "vertex.h"
 

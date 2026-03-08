@@ -1,4 +1,6 @@
 #pragma once
+
+
 #include "input.h"
 
 
@@ -13,11 +15,13 @@ import vulkan_hpp;
 class Window
 {
 public:
-	Window(uint32_t WIDTH, uint32_t HEIGHT)
+	Window(const char* Title, uint32_t WIDTH, uint32_t HEIGHT)
 	{
-		initWindow(WIDTH, HEIGHT);
+
+		initWindow(Title, WIDTH, HEIGHT);
 	}
-	void initWindow(uint32_t WIDTH, uint32_t HEIGHT);
+	~Window() = default;
+	void initWindow(const char* Title, uint32_t WIDTH, uint32_t HEIGHT);
 	int WindowClosed();
 	void PollEvent();
 	int GetKey(int key);

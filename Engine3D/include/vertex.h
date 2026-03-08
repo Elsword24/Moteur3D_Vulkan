@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+
+
 struct Light
 {
 	alignas(16) glm::vec3 posWorld;
