@@ -34,6 +34,12 @@ public:
     bool isActive() const { return active; }
     void setActive(bool isActive_) { active = isActive_; }
 
+    void Update(float elapsed)
+    {
+        for (auto& component : components)
+            component->Update(elapsed);
+    }
+
     bool isPendingDestroy() const { return pendingDestroy; }
     void MarkForDestroy()
     {

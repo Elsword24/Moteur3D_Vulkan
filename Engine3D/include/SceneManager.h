@@ -26,6 +26,15 @@ public:
     void OnEvent(const Event& event) override;
     void CleanupDestroyedEntities();
     void DestroyEntity(Entity* entity);
+    void Update(float elapsed)
+    {
+	    for (auto& entity : entities)
+	    {
+		    if (!entity->isActive())
+                continue;
+            entity->Update(elapsed);
+	    }
+    }
 
 private:
     void PreDestroyEntity(Entity* entity) const ;

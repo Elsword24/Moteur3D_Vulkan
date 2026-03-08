@@ -88,6 +88,7 @@ void RailShooter::Update(float elapsed)
 		{
 			mouseInputs->Update(elapsed);
 		}*/
+	m_scenemanager->Update(elapsed);
 	m_CameraSpline->Update();
 }
 
