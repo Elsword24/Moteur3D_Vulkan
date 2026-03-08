@@ -1,9 +1,11 @@
 #pragma once
-#include "Entity.h"
-
 
 //This category is here to handle sources of event you can add more category if you want but try to keep it simple and not too much categories
 //you can also use bitwise operator to combine categories for an event
+
+class Entity;
+class MeshComponent;
+class CameraComponent;
 
 enum class EventCategory
 	: uint16_t
@@ -48,7 +50,7 @@ public:
 	//Check if event is in category
 	bool IsInCategory(EventCategory category) const
 	{
-		return GetCategoryFlag() & static_cast<int>(category);
+		return (GetCategoryFlag() & category) != EventCategory::None;
 	}
 };
 
@@ -78,36 +80,6 @@ public:
 	DEFINE_EVENT_TYPE(WindowResizeEvent, EventCategory::Window);
 };
 
-class KeyPressedEvent : public Event
-{
-private:
-	int keyCode;
-	bool repeat;
-
-public:
-	KeyPressedEvent(int key, bool isRepeat) : keyCode(key), repeat(isRepeat) {}
-	
-	int GetKeyCode() const { return  keyCode; }
-	bool isRepeat() const { return  repeat; }
-	
-
-	DEFINE_EVENT_TYPE(KeyPressedEvent, EventCategory::Input | EventCategory::Keyboard);
-};
-
-class KeyReleasedEvent : public Event
-{
-	int keycode;
-	bool repeat;
-public:
-	KeyReleasedEvent(int key, bool isRepeat): keycode(key), repeat(isRepeat) {} 
-
-	int GetKeyCode() const { return keycode; }
-	bool isRepeat() const { return repeat; }
-
-	DEFINE_EVENT_TYPE(KeyReleasedEvent, EventCategory::Input | EventCategory::Keyboard);
-};
-
-
 class CollisionEvent : public Event
 {
 private:
@@ -120,4 +92,101 @@ public:
 	Entity* GetEntityA() const { return entityA; }
 	Entity* GetEntityB() const { return entityB; }
 
+	DEFINE_EVENT_TYPE(CollisionEvent, EventCategory::Application);
+
+};
+
+class HitEvent : public Event
+{
+private:
+	Entity* target = nullptr;
+public:
+	explicit HitEvent(Entity* targetEntity) : target(targetEntity) {}
+	Entity* GetTarget() const { return target; }
+
+	DEFINE_EVENT_TYPE(HitEvent, EventCategory::Application | EventCategory::Mouse)
+};
+
+class DestroyEntityEvent : public Event
+{
+private:
+	Entity* target = nullptr;
+
+public:
+	explicit DestroyEntityEvent(Entity* targetEntity) : target(targetEntity) {}
+	Entity* GetTarget() const { return target; }
+
+	DEFINE_EVENT_TYPE(DestroyEntityEvent, EventCategory::Application);
+};
+
+class MeshCreatedEvent : public Event
+{
+private:
+	MeshComponent* target = nullptr;
+public:
+	explicit MeshCreatedEvent(MeshComponent* targetMeshComponent)
+		:target(targetMeshComponent)
+	{
+	}
+	MeshComponent* GetTarget() const
+	{
+		return target;
+	}
+
+	
+	DEFINE_EVENT_TYPE(MeshCreatedEvent, EventCategory::Application)
+};
+
+class MeshDestroyEvent : public Event
+{
+private:
+	MeshComponent* target = nullptr;
+public:
+	explicit MeshDestroyEvent(MeshComponent* targetMeshComponent)
+		:target(targetMeshComponent)
+	{
+	}
+	MeshComponent* GetTarget() const
+	{
+		return target;
+	}
+
+
+	DEFINE_EVENT_TYPE(MeshDestroyEvent, EventCategory::Application)
+};
+
+class CameraSetEvent : public Event
+{
+private:
+	CameraComponent* target = nullptr;
+public:
+	explicit CameraSetEvent(CameraComponent* targetCameraComponent)
+		:target(targetCameraComponent)
+	{
+	}
+	CameraComponent* GetTarget() const
+	{
+		return target;
+	}
+
+
+	DEFINE_EVENT_TYPE(CameraSetEvent, EventCategory::Application)
+};
+
+class CameraRemoveEvent : public Event
+{
+private:
+	CameraComponent* target = nullptr;
+public:
+	explicit CameraRemoveEvent(CameraComponent* targetCameraComponent)
+		:target(targetCameraComponent)
+	{
+	}
+	CameraComponent* GetTarget() const
+	{
+		return target;
+	}
+
+
+	DEFINE_EVENT_TYPE(CameraRemoveEvent, EventCategory::Application)
 };

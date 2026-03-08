@@ -15,15 +15,37 @@ private:
     std::unordered_map<std::size_t, Component*> componentMap;
     std::string name;
     bool active = true;
+    bool pendingDestroy = false;
 
 public:
-    explicit Entity(std::string entityName) : name(
-        
-        (entityName)) {}
+    explicit Entity(std::string entityName) : name(std::move(entityName)) {}
+	~Entity()
+    {
+        for (auto& component : components)
+        {
+            if (component)
+            {
+                component->Destroy();
+            }
+		}
+    };
 
     const std::string& GetName() const { return name; }
     bool isActive() const { return active; }
     void setActive(bool isActive_) { active = isActive_; }
+
+    void Update(float elapsed)
+    {
+        for (auto& component : components)
+            component->Update(elapsed);
+    }
+
+    bool isPendingDestroy() const { return pendingDestroy; }
+    void MarkForDestroy()
+    {
+		pendingDestroy = true;
+		active = false;
+    }
 
     //This template can add a Component to an entity based on component name
     template<typename T, typename... Args>
@@ -41,6 +63,7 @@ public:
         T* componentPtr = component.get();
 
         componentPtr->SetOwner(this);
+		componentPtr->Initialize();
 
         componentMap[typeID] = componentPtr;
         components.push_back(std::move(component));
@@ -74,10 +97,21 @@ public:
         {
             if (compIt->get() == componentPtr)
             {
+				(*compIt)->Destroy();
                 components.erase(compIt);
                 return true;
             }
         }
         return false;
     }
+
+    std::vector<Component*> GetAllComponents() const
+    {
+	    std::vector<Component*> allComponents;
+        for (const auto& component : components)
+        {
+            allComponents.push_back(component.get());
+        }
+        return allComponents;
+	}
 };

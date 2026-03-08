@@ -1,12 +1,8 @@
 #pragma once
+#include <iostream>
 #include <rapidobj.hpp>
 #include "vertex.h"
 
-//struct MeshData
-//{
-//	std::vector<Vertex>   m_vertices;
-//	std::vector<uint32_t> m_indices;
-//};
 
 class Mesh
 {

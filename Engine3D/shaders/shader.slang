@@ -53,7 +53,7 @@ float4 fragMain(VSOutput vertIn) : SV_TARGET
     float diffuse = max(0,dot(vertIn.normal,L));
     float distance = length(light.posWorld - vertIn.posWorld);
     float attenuation = 1 / (1 + 0.1f * pow(distance,2));
-    vertIn.color = light.color * diffuse * attenuation * light.intensity;
-    //vertIn.color
-    return float4(light.color, 1.0);
+    float ambiant = 0.01f;
+    vertIn.color = light.color * (ambiant + diffuse * attenuation * light.intensity);
+    return float4(vertIn.color, 1.0);
 }
