@@ -146,8 +146,10 @@
   <ItemGroup>
     <ClCompile Include="src\API_Vulkan.cpp" />
     <ClCompile Include="src\baseComponent.cpp" />
+    <ClCompile Include="src\Engine.cxx" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MeshComponent.cpp" />
+    <ClCompile Include="src\RailShooter.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\Physics.cpp" />
     <ClCompile Include="src\SceneManager.cpp" />
@@ -175,6 +177,7 @@
     <ClInclude Include="include\vertex.h" />
     <ClInclude Include="include\vulkan.h" />
     <ClInclude Include="include\window.h" />
+    <ClInclude Include="include\World.h" />
   </ItemGroup>
   <ItemGroup>
     <SlangCompileTask Include="shaders\shader.slang">

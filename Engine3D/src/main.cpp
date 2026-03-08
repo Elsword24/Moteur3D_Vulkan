@@ -16,8 +16,8 @@
 
 
 
-//constexpr uint32_t WIDTH = 800;
-//constexpr uint32_t HEIGHT = 600;
+constexpr uint32_t WIDTH = 800;
+constexpr uint32_t HEIGHT = 600;
 
 // void launchVulkan( HelloTriangleApplication& app, Window& window, int& width, int& height )
 // {
@@ -233,6 +233,13 @@
 // 		// Set event bus to queue mode for better performance and to avoid issues with events being processed while entities are being destroyed
 // 		EventBus::Get().SetImmediateMode(false); 
 
+// 		glfwSetInputMode(window.getGLFWWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+// 		auto& inputManager = InputMapper::GetInstance();
+// 		inputManager.Init(window.getGLFWWindow());
+
+
+
+
 // 		//Camera
 // 		Entity* camera = sceneManager.CreateEntity("MainCamera");
 // 		auto transform = camera->AddComponent<TransformComponent>();
@@ -263,10 +270,9 @@
 
 // 		CameraSpline cameraSpline(camera, pointBase, 100);
 
-// 		glfwSetInputMode(window.getGLFWWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-// 		auto& inputManager = InputMapper::GetInstance();
-// 		inputManager.Init(window.getGLFWWindow());
+
+
 
 // 		MouseComponent::s_Window = &window;
 // 		MouseComponent::s_Physics = &m_PhysicsSystem;
