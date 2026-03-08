@@ -241,7 +241,10 @@ class InputComponent : public Component {
 
 public:
 
-	void Update(float dt) override {
+	void Update(float dt) override 
+	{
+		//TODO : REgler le problème de timer
+		//dt = dt / 1000.0f;
 		float speed = 2.0f;
 		auto transform = GetOwner()->GetComponent<TransformComponent>();
 		if (!transform) return;
