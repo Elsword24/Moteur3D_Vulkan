@@ -69,7 +69,6 @@ static bool RayVsAABB(const glm::vec3& o, const glm::vec3& d, float maxDist, con
 	return true;
 }
 
-//namespace Engine {
 	namespace Physics
 	{
 
@@ -266,20 +265,6 @@ static bool RayVsAABB(const glm::vec3& o, const glm::vec3& d, float maxDist, con
 			{
 				return BoxVSBox(bodyA, bodyB, info);
 			}
-			/*else if (colliderA->GetType() == ColliderType::Sphere && colliderB->GetType() == ColliderType::Box) {
-				return SphereVSBox(bodyA, bodyB, info);*/
-			//} 
-			/*else if (colliderA->GetType() == ColliderType::Box && colliderB->GetType() == ColliderType::Sphere)
-			{
-				bool result = SphereVSBox(bodyB, bodyA, info);
-				if (result)
-				{
-					//Flip normal direction
-					info.normal = -info.normal;
-				}
-				return result;
-			}*/
-			//unsupported collision type
 			return false;
 		}
 
@@ -390,4 +375,3 @@ static bool RayVsAABB(const glm::vec3& o, const glm::vec3& d, float maxDist, con
 			return false;
 		}
 	}
-//}

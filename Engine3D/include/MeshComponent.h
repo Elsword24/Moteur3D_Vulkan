@@ -45,6 +45,8 @@ public:
 	vk::raii::Buffer& GetIndexBuffer();
 
 	vk::raii::DeviceMemory& GetIndexBufferMemory();
+
+	void OnInitialize() override;
 };
 
 #endif

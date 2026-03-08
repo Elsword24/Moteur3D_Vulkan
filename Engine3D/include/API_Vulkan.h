@@ -28,7 +28,6 @@ import vulkan_hpp;
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-//#include "BaseComponent.h"
 
 
 
@@ -38,18 +37,6 @@ constexpr bool enableValidationLayers = false;
 constexpr bool enableValidationLayers = true;
 #endif
 
-
-//struct MeshVulkan
-//{
-//	vk::raii::Buffer vertexBuffer = nullptr;
-//	vk::raii::DeviceMemory vertexBufferMemory = nullptr;
-//	vk::raii::Buffer indexBuffer = nullptr;
-//	vk::raii::DeviceMemory indicesBufferMemory = nullptr;
-//	uint32_t index = 0;
-//};
-//
-//
-//std::vector<MeshVulkan> meshVulkans;
 
 
 class VulkanRAII
@@ -122,40 +109,7 @@ public:
 	const std::vector<vk::Image>& GetSwapChainImages() const;
 	const vk::raii::SwapchainKHR& GetSwapChain() const;
 	const vk::raii::Queue& GetQueue() const;
-	//TODO : A Déplacer 
-	/*void Vulkan(const std::vector<Vertex>& vertices, const std::vector<uint32_t> indices)
-	{
-		MeshVulkan meshVulkan;
 
-		meshVulkan.index = static_cast<uint32_t>(indices.size());
-		createVertexBuffer(vertices, meshVulkan.vertexBuffer, meshVulkan.vertexBufferMemory);
-		createIndexBuffer(indices, meshVulkan.indexBuffer, meshVulkan.indicesBufferMemory);
-
-		meshVulkans.push_back(std::move(meshVulkan));
-	}*/
-	
-
-	/*void cleanupSwapChain()
-	{
-		swapChainImageViews.clear();
-		swapChain = nullptr;
-	}
-
-	void recreateSwapChain()
-	{
-		int width = 0, height = 0;
-		glfwGetFramebufferSize(m_window, &width, &height);
-		while (width == 0 || height == 0)
-		{
-			glfwGetFramebufferSize(m_window, &width, &height);
-			glfwWaitEvents();
-		}
-		device.waitIdle();
-
-		cleanupSwapChain();
-		createSwapChain();
-		createImageViews();
-	}*/
 
 	void createInstance(const char* Title);
 

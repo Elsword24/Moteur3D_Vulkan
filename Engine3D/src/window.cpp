@@ -1,6 +1,12 @@
 #include "window.h"
 
 
+Window::Window(const char* Title, uint32_t WIDTH, uint32_t HEIGHT)
+{
+
+	initWindow(Title, WIDTH, HEIGHT);
+}
+
 void Window::initWindow(const char* Title, uint32_t WIDTH, uint32_t HEIGHT)
 {
 	glfwInit();

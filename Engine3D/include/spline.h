@@ -45,7 +45,7 @@ public:
 			}
 
 		}
-		// Dans le constructeur de CameraSpline, après le calcul des points
+		// Dans le constructeur de CameraSpline, aprï¿½s le calcul des points
 		for (const auto& point : m_points)
 			std::cout << "Point: " << point.x << ", " << point.y << ", " << point.z << std::endl;
 

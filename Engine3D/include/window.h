@@ -15,11 +15,7 @@ import vulkan_hpp;
 class Window
 {
 public:
-	Window(const char* Title, uint32_t WIDTH, uint32_t HEIGHT)
-	{
-
-		initWindow(Title, WIDTH, HEIGHT);
-	}
+	Window(const char* Title, uint32_t WIDTH, uint32_t HEIGHT);
 	~Window() = default;
 	void initWindow(const char* Title, uint32_t WIDTH, uint32_t HEIGHT);
 	int WindowClosed();

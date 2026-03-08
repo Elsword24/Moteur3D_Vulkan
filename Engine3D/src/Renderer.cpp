@@ -29,40 +29,6 @@ std::array<vk::VertexInputAttributeDescription, 3> Renderer::getAttributeDescrip
 		vk::VertexInputAttributeDescription(1,0,vk::Format::eR32G32B32Sfloat,offsetof(Vertex, normal)),
 		vk::VertexInputAttributeDescription(2,0,vk::Format::eR32G32Sfloat,offsetof(Vertex, uv))
 	};
-	/*return { 
-			{
-			{.location = 0, .binding = 0, .format = vk::Format::eR32G32B32Sfloat,
-			  .offset = offsetof(Vertex, pos)    },
-			{.location = 1, .binding = 0, .format = vk::Format::eR32G32B32Sfloat,
-			  .offset = offsetof(Vertex, normal) },
-			{.location = 2, .binding = 0, .format = vk::Format::eR32G32Sfloat,
-			  .offset = offsetof(Vertex, uv)     },
-		} };*/
-	/*return
-	{
-		vk::VertexInputAttributeDescription
-		(
-			
-			0,
-				0,
-				vk::Format::eR32G32B32Sfloat,
-				offsetof(Vertex, pos)
-		),
-		vk::VertexInputAttributeDescription
-		(
-			1,
-			0,
-			vk::Format::eR32G32B32Sfloat,
-			offsetof(Vertex, normal)
-		),
-		vk::VertexInputAttributeDescription
-		(
-			2,
-			0,
-			vk::Format::eR32G32Sfloat,
-			offsetof(Vertex, uv)
-		)
-	};*/
 }
 
 void Renderer::createDescriptorSetLayout()
@@ -259,22 +225,6 @@ void Renderer::recordCommandBuffer(uint32_t imageIndex)
 	if (m_RenderComponent.empty())
 		std::println("List of Render Component is Empty !!!");
 
-	/*for (const auto& object : sceneObjects)
-	{
-		auto& mesh = meshVulkans[object.first];
-		commandBuffer.pushConstants<glm::mat4>
-		(
-			*pipelineLayout,
-			vk::ShaderStageFlagBits::eVertex,
-			0,
-			object.second
-		);
-
-		commandBuffer.bindVertexBuffers(0, *mesh.vertexBuffer, { 0 });
-		commandBuffer.bindIndexBuffer(*mesh.indexBuffer, 0, vk::IndexType::eUint32);
-		commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, *pipelineLayout, 0, *descriptorSets[frameIndex], nullptr);
-		commandBuffer.drawIndexed(mesh.index, 1, 0, 0, 0);
-	}*/
 
 	for (auto& Mesh : m_RenderComponent)
 	{
@@ -366,7 +316,6 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
 
 	
 	UniformBufferObject ubo{};
-	//sceneObjects[1].second = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	float aspect = static_cast<float>(m_ObserverVulkan->GetSwapChainExtent().width) / static_cast<float>(m_ObserverVulkan->GetSwapChainExtent().height);
 	if (m_activeCamera)
@@ -423,20 +372,7 @@ void Renderer::drawFrame()
 
 	auto [result, imageIndex] = m_ObserverVulkan->GetSwapChain().acquireNextImage(UINT64_MAX, *presentCompleteSemaphores[frameIndex], nullptr);
 
-	//// Due to VULKAN_HPP_HANDLE_ERROR_OUT_OF_DATE_AS_SUCCESS being defined, eErrorOutOfDateKHR can be checked as a result
-		//// here and does not need to be caught by an exception.
-	//if (result == vk::Result::eErrorOutOfDateKHR)
-	//{
-	//	recreateSwapChain(width, height);
-	//	return;
-	//}
-	//// On other success codes than eSuccess and eSuboptimalKHR we just throw an exception.
-		//// On any error code, aquireNextImage already threw an exception.
-	//if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
-	//{
-	//	assert(result == vk::Result::eTimeout || result == vk::Result::eNotReady);
-	//	throw std::runtime_error("failed to acquire swap chain image!");
-	//}
+	
 	updateUniformBuffer(frameIndex);
 
 	// Only reset the fence if we are submitting work
@@ -461,18 +397,7 @@ void Renderer::drawFrame()
 		.pSwapchains = &*m_ObserverVulkan->GetSwapChain(),
 		.pImageIndices = &imageIndex };
 	result = m_ObserverVulkan->GetQueue().presentKHR(presentInfoKHR);
-	// Due to VULKAN_HPP_HANDLE_ERROR_OUT_OF_DATE_AS_SUCCESS being defined, eErrorOutOfDateKHR can be checked as a result
-	// here and does not need to be caught by an exception.
-	//if ((result == vk::Result::eSuboptimalKHR) || (result == vk::Result::eErrorOutOfDateKHR) || framebufferResized)
-	//{
-	//	framebufferResized = false;
-	//	recreateSwapChain(width, height);
-	//}
-	//else
-	//{
-	//	// There are no other success codes than eSuccess; on any error code, presentKHR already threw an exception.
-	//	assert(result == vk::Result::eSuccess);
-	//}
+
 	frameIndex = (frameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 

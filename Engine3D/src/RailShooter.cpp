@@ -21,7 +21,6 @@ void RailShooter::SettingWorld(SceneManager* scenemanager)
 	m_Camera = scenemanager->CreateEntity("MainCamera");
 	auto transform = m_Camera->AddComponent<TransformComponent>();
 	m_Camera->AddComponent<CameraComponent>();
-	m_Camera->AddComponent<InputComponent>();
 	m_Camera->AddComponent<MouseComponent>();
 	transformCamera = m_Camera->GetComponent<TransformComponent>();
 
@@ -114,8 +113,12 @@ void RailShooter::Update(float elapsed)
 	}
 }
 
-void RailShooter::KillWorld() 
+void RailShooter::Cleanup() 
 {
+	if (m_ObserverEngine && m_ObserverEngine->GetVulkan())
+	{
+		m_ObserverEngine->GetVulkan()->GetDevice().waitIdle();
+	}
 	m_scenemanager->CleanupDestroyedEntities();
 
 }

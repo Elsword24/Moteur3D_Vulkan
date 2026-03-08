@@ -4,13 +4,14 @@
 
 
 #include <memory>
+
 #include "spline.h"
 
 class Entity;
 class EngineQVY;
 class SceneManager;
 
-//class CameraSpline;
+
 
 
 class IWorld
@@ -23,7 +24,7 @@ public:
 
 	virtual void SettingWorld(SceneManager *scenemanager) = 0;
 	virtual void Update(float elapsed) = 0;
-	virtual void KillWorld() = 0;
+	virtual void Cleanup() = 0;
 };
 
 
@@ -49,16 +50,14 @@ private:
 public:
 	RailShooter(EngineQVY* observerEngine)
 		:m_ObserverEngine(observerEngine)
-	{
-
-	}
+	{}
 
 	~RailShooter() = default;
 	void SettingWorld(SceneManager* scenemanager) override;
 
 	void Update(float elapsed) override;
 
-	void KillWorld() override;
+	void Cleanup() override;
 };
 
 #endif
