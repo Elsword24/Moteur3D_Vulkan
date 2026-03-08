@@ -69,7 +69,7 @@ void RailShooter::SettingWorld(SceneManager* scenemanager)
 
 void RailShooter::Update(float elapsed) 
 {
-	m_CameraSpline->Update();
+	m_CameraSpline->Update(elapsed);
 	m_scenemanager->Update(elapsed);
 }
 

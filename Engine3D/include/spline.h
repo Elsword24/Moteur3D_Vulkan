@@ -50,17 +50,20 @@ public:
 
 	}
 	
-	void Update()
+	void Update(float elapsed)
 	{
 		static int index = 0;
 		static int direction = 1;
-		static int frameCount = 0;
-		const int frameCountMax = 10;
+		
 
-		frameCount++;
-		if (frameCount >= frameCountMax)
+		static float timer = 0.0f;
+		const float totalduration = 10.0f;
+		const float interval = totalduration / (float)m_points.size();
+
+		timer += elapsed;
+		if (timer >= interval)
 		{
-			frameCount = 0;
+			timer = 0.0f;
 			index += direction;
 
 			if (index >= (int)m_points.size() - 1)
