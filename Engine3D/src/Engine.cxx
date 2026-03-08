@@ -47,7 +47,7 @@ void EngineQVY::RunGameLoop()
 	while (!m_Window->WindowClosed())
 	{
 		auto current = std::chrono::high_resolution_clock::now();
-		auto elapsed = std::chrono::duration<float, std::milli>(current - previous).count();
+		auto elapsed = std::chrono::duration<float>(current - previous).count();
 		previous = current;
 
 		m_Window->PollEvent();
